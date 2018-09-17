@@ -40,12 +40,12 @@ The expectations currently are that Terraform will be used for setting up some k
 
 ## Technical architecture - bird's view
 
-VPC
-ECR (Container registry)
-Cluster + Service + Task Definition
-Application Load Balancer
-Trigger to deploy newly pushed Docker images to the ECS (lambda? CloudDeploy? CloudPipeline? Other?)
-CloudWatch Logs
+- VPC
+- ECR (Container registry)
+- Cluster + Service + Task Definition
+- Application Load Balancer
+- Trigger to deploy newly pushed Docker images to the ECS (lambda? CloudDeploy? CloudPipeline? Other?)
+- CloudWatch Logs
 
 ## LICENSE
 
