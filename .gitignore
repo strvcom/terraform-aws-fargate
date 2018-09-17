@@ -3,6 +3,9 @@
 
 # Generated files
 gh-pages
+.terraform
+*.tfstate*
+terraform.tfvars
 
 # Garbage
 *.lerna_backup
