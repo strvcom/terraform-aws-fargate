@@ -1,0 +1,26 @@
+sudo: required
+dist: trusty
+language: minimal
+
+services:
+  - docker
+
+branches:
+  only:
+    - master
+
+cache:
+  directories:
+    - .terraform
+
+# before_install: Do we need this?
+
+# install: Probably install dockerized Terraform, but they are installed on demand anyways
+
+# before_script: Do we need this?
+
+script:
+  - ./bin/terraform init -input=false
+  - ./bin/terraform validate -check-variables=false .
+  - if [[ -n "$(./bin/terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
+  - ./bin/tflint
