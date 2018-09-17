@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+exec docker run \
+  --name tflint \
+  --rm \
+  --volume "$(pwd)":/data \
+  wata727/tflint "${@}"
