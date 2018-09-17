@@ -1,0 +1,24 @@
+# Local configuration
+.bashrc
+
+# Generated files
+gh-pages
+
+# Garbage
+*.lerna_backup
+*.log
+*~
+*#
+.DS_Store
+.nyc_output
+.eslintcache
+
+# IDE stuff
+.netbeans
+nbproject
+.idea
+.node_history
+*.sublime-*
+*.atom-*
+.tern-*
+jsconfig.json
