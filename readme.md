@@ -1,5 +1,7 @@
 # Fargate Backend
 
+[![Build Status][travis-badge]][travis-home]
+
 > This is a collaborative attempt to provide alternative deployment target to Heroku, by using Fargate instead. Since deploying to AWS in general is much more complex to set up compared to Heroku, this repository's goal is to provide a simple, easy to use setup & deployment pipeline to make it easier for general use.
 
 ## About
@@ -50,3 +52,6 @@ The expectations currently are that Terraform will be used for setting up some k
 ## LICENSE
 
 This project is currently **not open-source** 🤷‍♂️.
+
+[travis-badge]: https://travis-ci.com/strvcom/fargate-backend.svg?token=xwhuCSHsE2sXJPqUYAsC&branch=master
+[travis-home]: https://travis-ci.com/strvcom/fargate-backend
