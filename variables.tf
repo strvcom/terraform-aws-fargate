@@ -6,10 +6,6 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "profile" {
-  description = "AWS account profile to use for deployments"
-}
-
 ## VPC variables
 
 variable "vpc-region-azs" {

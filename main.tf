@@ -7,7 +7,6 @@ terraform {
 provider "aws" {
   version = "~> 1.36.0"
   region  = "${var.region}"
-  profile = "${var.profile}"
 }
 
 module "vpc" {
