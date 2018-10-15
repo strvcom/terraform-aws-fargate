@@ -23,4 +23,4 @@ script:
   - ./bin/terraform init -input=false
   - ./bin/terraform validate -check-variables=false .
   - if [[ -n "$(./bin/terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
-  - ./bin/tflint
+  - ./bin/tflint --debug
