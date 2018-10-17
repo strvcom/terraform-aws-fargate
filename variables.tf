@@ -20,6 +20,11 @@ variable "repo_owner" {
   default     = "strvcom"
 }
 
+variable "development_mode" {
+  description = "Whether or not create a most robust production-ready infrastructure with ALBs and more than 1 replica"
+  default     = false
+}
+
 ## VPC variables
 
 variable "vpc_create" {
@@ -51,10 +56,6 @@ variable "cloudwatch_logs_default_retention_days" {
 
 variable "ecr_default_retention_count" {
   default = 20
-}
-
-variable "services_default_port" {
-  default = 3000
 }
 
 variable "services" {

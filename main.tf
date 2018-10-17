@@ -20,6 +20,10 @@ module "vpc" {
   public_subnets  = "${var.vpc_public_subnets}"
   private_subnets = "${var.vpc_private_subnets}"
 
+  # NAT gateway for private subnets
+  enable_nat_gateway = true
+  single_nat_gateway = true
+
   # Every instance deployed within the VPC will get a hostname
   enable_dns_hostnames = true
 
@@ -140,11 +144,9 @@ resource "aws_security_group" "services" {
   }
 
   ingress {
-    from_port = "${var.services_default_port}"
-    to_port   = "${var.services_default_port}"
-    protocol  = "tcp"
-
-    # cidr_blocks = ["0.0.0.0/0"]
+    from_port       = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+    to_port         = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+    protocol        = "tcp"
     security_groups = ["${aws_security_group.web.id}"]
   }
 }
@@ -216,12 +218,13 @@ resource "aws_ecs_service" "this" {
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
 
-  # iam_role        = "${aws_iam_role.service.arn}" Not yet!
+  # iam_role        = "${aws_iam_role.service.arn}" TODO: Not yet (?)
 
   network_configuration {
-    security_groups  = ["${aws_security_group.services.id}"]
-    subnets          = ["${module.vpc.public_subnets}"]
-    assign_public_ip = true
+    security_groups = ["${aws_security_group.services.id}"]
+    subnets         = ["${module.vpc.private_subnets}"]
+
+    # assign_public_ip = true <- TODO: enable if development_mode is true
   }
   load_balancer {
     target_group_arn = "${element(aws_lb_target_group.this.*.arn, count.index)}"
@@ -340,10 +343,8 @@ resource "aws_codepipeline" "this" {
       output_artifacts = ["source"]
 
       configuration {
-        Owner = "${var.repo_owner}"
-        Repo  = "${var.repo_name}"
-
-        # OAuthToken = "${var.repo_oauth_token}"
+        Owner  = "${var.repo_owner}"
+        Repo   = "${var.repo_name}"
         Branch = "${terraform.workspace == "default" ? "master" : terraform.workspace}"
       }
     }
