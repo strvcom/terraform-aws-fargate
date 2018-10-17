@@ -41,7 +41,7 @@ data "template_file" "ecr-lifecycle" {
   template = "${file("${path.module}/policies/ecr-lifecycle-policy.json")}"
 
   vars {
-    count = "${lookup(var.services[element(keys(var.services), count.index)], "registry_retention_days", var.ecr_default_retention_days)}"
+    count = "${lookup(var.services[element(keys(var.services), count.index)], "registry_retention_count", var.ecr_default_retention_count)}"
   }
 }
 
@@ -79,8 +79,9 @@ data "template_file" "tasks" {
 
   vars {
     container_name = "${element(keys(var.services), count.index)}"
+    container_port = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
     repository_url = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
-    log_group      = "${aws_cloudwatch_log_group.this.name}"
+    log_group      = "${element(aws_cloudwatch_log_group.this.*.name, count.index)}"
     region         = "${var.region}"
   }
 }
@@ -101,14 +102,14 @@ resource "aws_ecs_task_definition" "this" {
 resource "aws_cloudwatch_log_group" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
-  name = "ecs/${var.name}-${element(keys(var.services), count.index)}"
+  name = "/ecs/${var.name}-${element(keys(var.services), count.index)}"
 
   retention_in_days = "${lookup(var.services[element(keys(var.services), count.index)], "logs_retention_days", var.cloudwatch_logs_default_retention_days)}"
 }
 
-# SECURITY GROUP. Should be global?
+# SECURITY GROUPS
 
-resource "aws_security_group" "this" {
+resource "aws_security_group" "web" {
   vpc_id = "${module.vpc.vpc_id}"
   name   = "${var.name}-${terraform.workspace}-web-sg"
 
@@ -120,10 +121,73 @@ resource "aws_security_group" "this" {
   }
 
   ingress {
-    from_port   = 3000          # FIXME
-    to_port     = 3000
+    from_port   = 80
+    to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_security_group" "services" {
+  vpc_id = "${module.vpc.vpc_id}"
+  name   = "${var.name}-${terraform.workspace}-services-sg"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
+    from_port = "${var.services_default_port}"
+    to_port   = "${var.services_default_port}"
+    protocol  = "tcp"
+
+    # cidr_blocks = ["0.0.0.0/0"]
+    security_groups = ["${aws_security_group.web.id}"]
+  }
+}
+
+# ALBs
+
+resource "random_id" "target_group_sufix" {
+  byte_length = 2
+}
+
+resource "aws_lb_target_group" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name        = "${var.name}-${element(keys(var.services), count.index)}-${random_id.target_group_sufix.hex}"
+  port        = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+  protocol    = "HTTP"
+  vpc_id      = "${module.vpc.vpc_id}"
+  target_type = "ip"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "aws_lb" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name            = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-alb"
+  subnets         = ["${module.vpc.public_subnets}"]
+  security_groups = ["${aws_security_group.web.id}"]
+}
+
+resource "aws_lb_listener" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  load_balancer_arn = "${element(aws_lb.this.*.arn, count.index)}"
+  port              = "80"
+  protocol          = "HTTP"
+  depends_on        = ["aws_lb_target_group.this"]
+
+  default_action {
+    target_group_arn = "${element(aws_lb_target_group.this.*.arn, count.index)}"
+    type             = "forward"
   }
 }
 
@@ -155,10 +219,16 @@ resource "aws_ecs_service" "this" {
   # iam_role        = "${aws_iam_role.service.arn}" Not yet!
 
   network_configuration {
-    security_groups  = ["${aws_security_group.this.id}"]
+    security_groups  = ["${aws_security_group.services.id}"]
     subnets          = ["${module.vpc.public_subnets}"]
     assign_public_ip = true
   }
+  load_balancer {
+    target_group_arn = "${element(aws_lb_target_group.this.*.arn, count.index)}"
+    container_name   = "${element(keys(var.services), count.index)}"
+    container_port   = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+  }
+  depends_on = ["aws_lb_target_group.this", "aws_lb_listener.this"]
 }
 
 # CODEBUILD
@@ -197,10 +267,6 @@ data "template_file" "buildspec" {
     container_name = "${element(keys(var.services), count.index)}"
     repository_url = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
     region         = "${var.region}"
-
-    # cluster_name       = "${aws_ecs_cluster.this.name}"
-    # subnets_id         = "${module.vpc.public_subnets}"
-    # security_group_ids = "${aws_security_group.this.id}"
   }
 }
 
@@ -319,4 +385,6 @@ resource "aws_codepipeline" "this" {
       }
     }
   }
+
+  depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
 }

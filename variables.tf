@@ -49,8 +49,12 @@ variable "cloudwatch_logs_default_retention_days" {
 
 ## ECS variables
 
-variable "ecr_default_retention_days" {
+variable "ecr_default_retention_count" {
   default = 20
+}
+
+variable "services_default_port" {
+  default = 3000
 }
 
 variable "services" {
