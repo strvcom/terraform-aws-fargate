@@ -1,0 +1,14 @@
+{
+  "rules": [{
+    "rulePriority": 1,
+    "description": "Expire outdated tagged images",
+    "selection": {
+      "tagStatus": "any",
+      "countType": "imageCountMoreThan",
+      "countNumber": ${count}
+    },
+    "action": {
+      "type": "expire"
+    }
+  }]
+}
