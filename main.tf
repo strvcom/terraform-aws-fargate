@@ -133,6 +133,8 @@ resource "aws_security_group" "web" {
 }
 
 resource "aws_security_group" "services" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
   vpc_id = "${module.vpc.vpc_id}"
   name   = "${var.name}-${terraform.workspace}-services-sg"
 
@@ -221,7 +223,7 @@ resource "aws_ecs_service" "this" {
   # iam_role        = "${aws_iam_role.service.arn}" TODO: Not yet (?)
 
   network_configuration {
-    security_groups = ["${aws_security_group.services.id}"]
+    security_groups = ["${element(aws_security_group.services.*.id, count.index)}"]
     subnets         = ["${module.vpc.private_subnets}"]
 
     # assign_public_ip = true <- TODO: enable if development_mode is true
