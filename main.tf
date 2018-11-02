@@ -9,7 +9,8 @@ terraform {
 data "aws_availability_zones" "this" {}
 
 module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
+  source  = "terraform-aws-modules/vpc/aws"
+  version = "1.46.0"
 
   create_vpc = "${var.vpc_create}"
 
