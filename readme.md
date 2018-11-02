@@ -51,7 +51,7 @@ The expectations currently are that Terraform will be used for setting up some k
 
 ## LICENSE
 
-This project is currently **not open-source** 🤷‍♂️.
+See the [LICENSE](LICENSE) file for information.
 
 [travis-badge]: https://travis-ci.com/strvcom/fargate-backend.svg?token=xwhuCSHsE2sXJPqUYAsC&branch=master
 [travis-home]: https://travis-ci.com/strvcom/fargate-backend
