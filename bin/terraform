@@ -7,4 +7,4 @@ exec docker run \
   --rm \
   --workdir /tmp/workspace/terraform \
   --volume "$(pwd)":/tmp/workspace/terraform \
-  hashicorp/terraform:0.11.8 "${@}"
+  hashicorp/terraform:0.11.11 "${@}"

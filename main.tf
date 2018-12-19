@@ -1,7 +1,7 @@
 # Main Module file
 
 terraform {
-  required_version = "~> 0.11.8"
+  required_version = "~> 0.11.11"
 }
 
 # VPC CONFIGURATION
