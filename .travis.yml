@@ -13,12 +13,6 @@ cache:
   directories:
     - .terraform
 
-# before_install: Do we need this?
-
-# install: Probably install dockerized Terraform, but they are installed on demand anyways
-
-# before_script: Do we need this?
-
 script:
   - ./bin/terraform init -input=false
   - ./bin/terraform validate -check-variables=false .
