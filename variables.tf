@@ -61,3 +61,13 @@ variable "ecr_default_retention_count" {
 variable "services" {
   type = "map"
 }
+
+## Docker
+
+variable "dockerfile_default_name" {
+  default = "Dockerfile"
+}
+
+variable "dockerfile_default_path" {
+  default = "."
+}

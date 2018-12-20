@@ -24,8 +24,11 @@ module "fargate" {
       memory          = "512"
       replicas        = 3
 
-      registry_retention_count = 15
-      logs_retention_days      = 14
+      registry_retention_count = 15 # Optional. 20 by default
+      logs_retention_days      = 14 # Optional. 30 by default
+
+      dockerfile      = "Dockerfile" # Optional. Dockerfile by default
+      dockerfile_path = "."          # Optional. '.' by default
     }
   }
 }
