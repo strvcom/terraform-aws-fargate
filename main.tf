@@ -270,9 +270,11 @@ data "template_file" "buildspec" {
   template = "${file("${path.module}/build/buildspec.yml")}"
 
   vars {
-    container_name = "${element(keys(var.services), count.index)}"
-    repository_url = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
-    region         = "${var.region}"
+    container_name  = "${element(keys(var.services), count.index)}"
+    repository_url  = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
+    region          = "${var.region}"
+    dockerfile      = "${lookup(var.services[element(keys(var.services), count.index)], "dockerfile", var.dockerfile_default_name)}"
+    dockerfile_path = "${lookup(var.services[element(keys(var.services), count.index)], "dockerfile_path", var.dockerfile_default_path)}"
   }
 }
 
