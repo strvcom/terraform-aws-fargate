@@ -2,16 +2,12 @@
 
 ## Usage
 
-First update both `repo_name` and `repo_owner` with a Github repository and valid username respectively
-
-> This probably will change in the future by setting the source as the [ECR repository](https://aws.amazon.com/about-aws/whats-new/2018/11/the-aws-developer-tools-improve-continuous-delivery-support-for-aws-fargate-and-amazon-ecs/) instead of a Github repository
-
-And then, to run this example you need to execute:
+To run this example you need to execute:
 
 ```bash
 $ terraform init
 $ terraform plan
-$ GITHUB_TOKEN=<token> terraform apply
+$ terraform apply
 ```
 
 Note that this example create resources which can cost money (AWS Fargate Services, for example). Run `terraform destroy` when you don't need these resources.
