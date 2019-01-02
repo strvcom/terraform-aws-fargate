@@ -3,7 +3,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 1.52.0"
+  version = "~> 1.54.0"
   region  = "us-east-1"
   profile = "playground"
 }

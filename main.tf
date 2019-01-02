@@ -352,6 +352,7 @@ resource "aws_codepipeline" "this" {
 
       configuration {
         RepositoryName = "${element(aws_ecr_repository.this.*.name, count.index)}"
+        ImageTag       = "latest"
       }
     }
   }
@@ -395,3 +396,64 @@ resource "aws_codepipeline" "this" {
 
   depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
 }
+
+### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
+
+resource "aws_iam_role" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-events-role"
+
+  assume_role_policy = "${file("${path.module}/policies/events-role.json")}"
+}
+
+data "template_file" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  template = "${file("${path.module}/policies/events-role-policy.json")}"
+
+  vars {
+    codepipeline_arn = "${element(aws_codepipeline.this.*.arn, count.index)}"
+  }
+}
+
+resource "aws_iam_role_policy" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-events-role-policy"
+  role   = "${element(aws_iam_role.events.*.id, count.index)}"
+  policy = "${element(data.template_file.events.*.rendered, count.index)}"
+}
+
+data "template_file" "ecr_event" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  template = "${file("${path.module}/cloudwatch/ecr-source-event.json")}"
+
+  vars {
+    ecr_repository_name = "${element(aws_ecr_repository.this.*.name, count.index)}"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name        = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-ecr-event"
+  description = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the Amazon ECR image tag."
+
+  event_pattern = "${element(data.template_file.ecr_event.*.rendered, count.index)}"
+
+  depends_on = ["aws_codepipeline.this"]
+}
+
+resource "aws_cloudwatch_event_target" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  rule      = "${element(aws_cloudwatch_event_rule.this.*.name, count.index)}"
+  target_id = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline"
+  arn       = "${element(aws_codepipeline.this.*.arn, count.index)}"
+  role_arn  = "${element(aws_iam_role.events.*.arn, count.index)}"
+}
+
+### End Remove
+
