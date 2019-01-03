@@ -11,15 +11,6 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "repo_name" {
-  description = "Name of the repository. Needed for Continious Deployment for ECS services"
-}
-
-variable "repo_owner" {
-  description = "Owner of the repository"
-  default     = "strvcom"
-}
-
 variable "development_mode" {
   description = "Whether or not create a most robust production-ready infrastructure with ALBs and more than 1 replica"
   default     = false
@@ -60,14 +51,4 @@ variable "ecr_default_retention_count" {
 
 variable "services" {
   type = "map"
-}
-
-## Docker
-
-variable "dockerfile_default_name" {
-  default = "Dockerfile"
-}
-
-variable "dockerfile_default_path" {
-  default = "."
 }

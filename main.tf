@@ -270,11 +270,7 @@ data "template_file" "buildspec" {
   template = "${file("${path.module}/build/buildspec.yml")}"
 
   vars {
-    container_name  = "${element(keys(var.services), count.index)}"
-    repository_url  = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
-    region          = "${var.region}"
-    dockerfile      = "${lookup(var.services[element(keys(var.services), count.index)], "dockerfile", var.dockerfile_default_name)}"
-    dockerfile_path = "${lookup(var.services[element(keys(var.services), count.index)], "dockerfile_path", var.dockerfile_default_path)}"
+    container_name = "${element(keys(var.services), count.index)}"
   }
 }
 
@@ -306,30 +302,37 @@ resource "aws_codebuild_project" "this" {
 
 # CODEPIPELINE
 resource "aws_iam_role" "codepipeline" {
-  name = "${var.name}-${terraform.workspace}-codepipeline-role"
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline-role"
 
   assume_role_policy = "${file("${path.module}/policies/codepipeline-role.json")}"
 }
 
 data "template_file" "codepipeline" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
   template = "${file("${path.module}/policies/codepipeline-role-policy.json")}"
 
   vars {
-    aws_s3_bucket_arn = "${aws_s3_bucket.this.arn}"
+    aws_s3_bucket_arn  = "${aws_s3_bucket.this.arn}"
+    ecr_repository_arn = "${element(aws_ecr_repository.this.*.arn, count.index)}"
   }
 }
 
 resource "aws_iam_role_policy" "codepipeline" {
-  name   = "${var.name}-${terraform.workspace}-codepipeline-role-policy"
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline-role-policy"
   role   = "${aws_iam_role.codepipeline.id}"
-  policy = "${data.template_file.codepipeline.rendered}"
+  policy = "${element(data.template_file.codepipeline.*.rendered, count.index)}"
 }
 
 resource "aws_codepipeline" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name     = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-pipeline"
-  role_arn = "${aws_iam_role.codepipeline.arn}"
+  role_arn = "${element(aws_iam_role.codepipeline.*.arn, count.index)}"
 
   artifact_store {
     location = "${aws_s3_bucket.this.bucket}"
@@ -342,15 +345,14 @@ resource "aws_codepipeline" "this" {
     action {
       name             = "Source"
       category         = "Source"
-      owner            = "ThirdParty"
-      provider         = "GitHub"
+      owner            = "AWS"
+      provider         = "ECR"
       version          = "1"
       output_artifacts = ["source"]
 
       configuration {
-        Owner  = "${var.repo_owner}"
-        Repo   = "${var.repo_name}"
-        Branch = "${terraform.workspace == "default" ? "master" : terraform.workspace}"
+        RepositoryName = "${element(aws_ecr_repository.this.*.name, count.index)}"
+        ImageTag       = "latest"
       }
     }
   }
@@ -394,3 +396,64 @@ resource "aws_codepipeline" "this" {
 
   depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
 }
+
+### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
+
+resource "aws_iam_role" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-events-role"
+
+  assume_role_policy = "${file("${path.module}/policies/events-role.json")}"
+}
+
+data "template_file" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  template = "${file("${path.module}/policies/events-role-policy.json")}"
+
+  vars {
+    codepipeline_arn = "${element(aws_codepipeline.this.*.arn, count.index)}"
+  }
+}
+
+resource "aws_iam_role_policy" "events" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-events-role-policy"
+  role   = "${element(aws_iam_role.events.*.id, count.index)}"
+  policy = "${element(data.template_file.events.*.rendered, count.index)}"
+}
+
+data "template_file" "ecr_event" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  template = "${file("${path.module}/cloudwatch/ecr-source-event.json")}"
+
+  vars {
+    ecr_repository_name = "${element(aws_ecr_repository.this.*.name, count.index)}"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  name        = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-ecr-event"
+  description = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the Amazon ECR image tag."
+
+  event_pattern = "${element(data.template_file.ecr_event.*.rendered, count.index)}"
+
+  depends_on = ["aws_codepipeline.this"]
+}
+
+resource "aws_cloudwatch_event_target" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  rule      = "${element(aws_cloudwatch_event_rule.this.*.name, count.index)}"
+  target_id = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline"
+  arn       = "${element(aws_codepipeline.this.*.arn, count.index)}"
+  role_arn  = "${element(aws_iam_role.events.*.arn, count.index)}"
+}
+
+### End Remove
+

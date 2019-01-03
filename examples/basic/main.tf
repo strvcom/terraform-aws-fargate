@@ -3,7 +3,7 @@ terraform {
 }
 
 provider "aws" {
-  version = "~> 1.52.0"
+  version = "~> 1.54.0"
   region  = "us-east-1"
   profile = "playground"
 }
@@ -12,9 +12,6 @@ module "fargate" {
   source = "../../"
 
   name = "basic-example"
-
-  repo_name  = "<github_repo_name>" # CHANGE THIS
-  repo_owner = "<github_username>"  # CHANGE THIS
 
   services = {
     api = {
@@ -26,9 +23,6 @@ module "fargate" {
 
       registry_retention_count = 15 # Optional. 20 by default
       logs_retention_days      = 14 # Optional. 30 by default
-
-      dockerfile      = "Dockerfile" # Optional. Dockerfile by default
-      dockerfile_path = "."          # Optional. '.' by default
     }
   }
 }

@@ -1,0 +1,24 @@
+{
+  "source": [
+    "aws.ecr"
+  ],
+  "detail-type": [
+    "AWS API Call via CloudTrail"
+  ],
+  "detail": {
+    "eventSource": [
+      "ecr.amazonaws.com"
+    ],
+    "eventName": [
+      "PutImage"
+    ],
+    "requestParameters": {
+      "repositoryName": [
+        "${ecr_repository_name}"
+      ],
+      "imageTag": [
+        "latest"
+      ]
+    }
+  }
+}

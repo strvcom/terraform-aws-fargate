@@ -24,6 +24,15 @@
       "Resource": "*"
     },
     {
+      "Effect": "Allow",
+      "Action": [
+        "ecr:DescribeImages"
+      ],
+      "Resource": [
+        "${ecr_repository_arn}"
+      ]
+    },
+    {
       "Action": [
         "ecs:*",
         "events:DescribeRule",
