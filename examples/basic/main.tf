@@ -25,7 +25,7 @@ module "fargate" {
       logs_retention_days      = 14 # Optional. 30 by default
 
       # To activate SSL Listener (HTTPS) set the ARN of the ACM certificate here! 🔑
-      # ssl_arn = "arn:......"
+      # acm_certificate_arn = "arn:......"
     }
   }
 }

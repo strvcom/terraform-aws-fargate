@@ -193,10 +193,10 @@ resource "aws_lb_listener" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   load_balancer_arn = "${element(aws_lb.this.*.arn, count.index)}"
-  port              = "${lookup(var.services[element(keys(var.services), count.index)], "ssl_arn", "") != "" ? 443 : 80}"
-  protocol          = "${lookup(var.services[element(keys(var.services), count.index)], "ssl_arn", "") != "" ? "HTTPS" : "HTTP"}"
-  ssl_policy        = "${lookup(var.services[element(keys(var.services), count.index)], "ssl_arn", "") != "" ? "ELBSecurityPolicy-2016-08" : ""}"
-  certificate_arn   = "${lookup(var.services[element(keys(var.services), count.index)], "ssl_arn", "")}"
+  port              = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? 443 : 80}"
+  protocol          = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"}"
+  ssl_policy        = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-2016-08" : ""}"
+  certificate_arn   = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "")}"
   depends_on        = ["aws_lb_target_group.this"]
 
   default_action {
