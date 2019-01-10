@@ -198,17 +198,6 @@ resource "aws_lb_listener" "this" {
 
 # ECS SERVICES
 
-# resource "aws_iam_role" "service" {
-#   name               = "${var.name}-${terraform.workspace}-service-role"
-#   assume_role_policy = "${file("${path.module}/policies/ecs-service-role.json")}"
-# }
-
-# resource "aws_iam_role_policy" "service" {
-#   name   = "${var.name}-${terraform.workspace}-service-policy"
-#   policy = "${file("${path.module}/policies/ecs-service-role-policy.json")}"
-#   role   = "${aws_iam_role.service.id}"
-# }
-
 resource "aws_ecs_service" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
@@ -221,19 +210,17 @@ resource "aws_ecs_service" "this" {
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
 
-  # iam_role        = "${aws_iam_role.service.arn}" TODO: Not yet (?)
-
   network_configuration {
     security_groups = ["${element(aws_security_group.services.*.id, count.index)}"]
     subnets         = ["${module.vpc.private_subnets}"]
-
-    # assign_public_ip = true <- TODO: enable if development_mode is true
   }
+
   load_balancer {
     target_group_arn = "${element(aws_lb_target_group.this.*.arn, count.index)}"
     container_name   = "${element(keys(var.services), count.index)}"
     container_port   = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
   }
+
   depends_on = ["aws_lb_target_group.this", "aws_lb_listener.this"]
 }
 
@@ -289,7 +276,7 @@ resource "aws_codebuild_project" "this" {
     compute_type = "BUILD_GENERAL1_SMALL"
 
     // https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
-    image           = "aws/codebuild/docker:17.09.0"
+    image           = "aws/codebuild/docker:18.09.0"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
   }

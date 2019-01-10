@@ -11,11 +11,6 @@ variable "region" {
   default     = "us-east-1"
 }
 
-variable "development_mode" {
-  description = "Whether or not create a most robust production-ready infrastructure with ALBs and more than 1 replica"
-  default     = false
-}
-
 ## VPC variables
 
 variable "vpc_create" {
