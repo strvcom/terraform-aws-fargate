@@ -131,6 +131,13 @@ resource "aws_security_group" "web" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_security_group" "services" {
@@ -192,8 +199,10 @@ resource "aws_lb_listener" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   load_balancer_arn = "${element(aws_lb.this.*.arn, count.index)}"
-  port              = "80"
-  protocol          = "HTTP"
+  port              = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? 443 : 80}"
+  protocol          = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"}"
+  ssl_policy        = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : ""}"
+  certificate_arn   = "${lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "")}"
   depends_on        = ["aws_lb_target_group.this"]
 
   default_action {
