@@ -157,6 +157,12 @@ resource "aws_security_group" "services" {
 # ALBs
 
 resource "random_id" "target_group_sufix" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  keepers = {
+    container_port = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+  }
+
   byte_length = 2
 }
 
@@ -164,7 +170,7 @@ resource "aws_lb_target_group" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name        = "${var.name}-${element(keys(var.services), count.index)}-${random_id.target_group_sufix.hex}"
-  port        = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
+  port        = "${element(random_id.target_group_sufix.*.keepers.container_port, count.index)}"
   protocol    = "HTTP"
   vpc_id      = "${module.vpc.vpc_id}"
   target_type = "ip"
