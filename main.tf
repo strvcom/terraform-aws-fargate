@@ -399,6 +399,101 @@ resource "aws_codepipeline" "this" {
   depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
 }
 
+# CHATOPS - SLACK AWS LAMBDA
+
+data "null_data_source" "chatops_file" {
+  inputs {
+    filename = "${substr("${path.module}/functions/slack_chatops/index.js", length(path.cwd) + 1, -1)}"
+  }
+}
+
+data "null_data_source" "chatops_archive" {
+  inputs {
+    filename = "${substr("${path.module}/functions/slack_chatops/index.zip", length(path.cwd) + 1, -1)}"
+  }
+}
+
+data "archive_file" "chatops" {
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
+
+  type        = "zip"
+  source_file = "${data.null_data_source.chatops_file.outputs.filename}"
+  output_path = "${data.null_data_source.chatops_archive.outputs.filename}"
+}
+
+resource "aws_iam_role" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  name = "${var.name}-${terraform.workspace}-chatops-lambda-role"
+
+  assume_role_policy = "${file("${path.module}/policies/chatops-lambda-role.json")}"
+}
+
+resource "aws_iam_role_policy" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  name   = "${var.name}-${terraform.workspace}-chatops-lambda-role-policy"
+  role   = "${aws_iam_role.chatops.id}"
+  policy = "${file("${path.module}/policies/chatops-lambda-role-policy.json")}"
+}
+
+resource "aws_lambda_function" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  filename = "${element(data.archive_file.chatops.*.output_path, count.index)}"
+
+  function_name    = "${var.name}-${terraform.workspace}-chatops-function"
+  role             = "${aws_iam_role.chatops.arn}"
+  handler          = "index.handler"
+  source_code_hash = "${element(data.archive_file.chatops.*.output_base64sha256, count.index)}"
+  runtime          = "nodejs8.10"
+
+  environment {
+    variables = {
+      SLACK_WEBHOOK_URL = "${lookup(var.slack_config, "webhook_url")}"
+      SLACK_CHANNEL     = "${lookup(var.slack_config, "channel")}"
+      SLACK_USERNAME    = "${lookup(var.slack_config, "username")}"
+    }
+  }
+}
+
+resource "aws_lambda_permission" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  statement_id  = "${var.name}-${terraform.workspace}-pipeline-executions"
+  action        = "lambda:InvokeFunction"
+  function_name = "${aws_lambda_function.chatops.function_name}"
+  principal     = "events.amazonaws.com"
+  source_arn    = "${element(aws_cloudwatch_event_rule.chatops.*.arn, count.index)}"
+}
+
+data "template_file" "codepipeline_event" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  template = "${file("${path.module}/cloudwatch/codepipeline-source-event.json")}"
+
+  vars {
+    codepipeline_names = "${jsonencode(aws_codepipeline.this.*.name)}"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  name        = "${var.name}-${terraform.workspace}-pipeline-events"
+  description = "Amazon CloudWatch Events rule to automatically execute a Lambda function to post messages into a Slack channel when CodePipeline state changes (Succeeded or Failed)."
+
+  event_pattern = "${element(data.template_file.codepipeline_event.*.rendered, count.index)}"
+}
+
+resource "aws_cloudwatch_event_target" "chatops" {
+  count ="${var.slack_chatops_enabled ? 1 : 0}"
+
+  rule      = "${element(aws_cloudwatch_event_rule.chatops.*.name, count.index)}"
+  target_id = "${var.name}-${terraform.workspace}-codepipeline"
+  arn       = "${element(aws_lambda_function.chatops.*.arn, count.index)}"
+}
+
 ### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
 
 resource "aws_iam_role" "events" {
@@ -437,7 +532,7 @@ data "template_file" "ecr_event" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "this" {
+resource "aws_cloudwatch_event_rule" "events" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name        = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-ecr-event"
@@ -448,10 +543,10 @@ resource "aws_cloudwatch_event_rule" "this" {
   depends_on = ["aws_codepipeline.this"]
 }
 
-resource "aws_cloudwatch_event_target" "this" {
+resource "aws_cloudwatch_event_target" "events" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
-  rule      = "${element(aws_cloudwatch_event_rule.this.*.name, count.index)}"
+  rule      = "${element(aws_cloudwatch_event_rule.events.*.name, count.index)}"
   target_id = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline"
   arn       = "${element(aws_codepipeline.this.*.arn, count.index)}"
   role_arn  = "${element(aws_iam_role.events.*.arn, count.index)}"

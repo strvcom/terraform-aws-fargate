@@ -47,3 +47,15 @@ variable "ecr_default_retention_count" {
 variable "services" {
   type = "map"
 }
+
+## AWS LAMBDA - CHATOPS variables
+
+variable "slack_chatops_enabled" {
+  description = "Whether or not setup a ChatOps configuration exposing the current state of a CodePipeline execution."
+  default = false
+}
+
+variable "slack_config" {
+  type    = "map"
+  default = {}
+}

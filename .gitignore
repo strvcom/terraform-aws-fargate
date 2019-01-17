@@ -25,3 +25,5 @@ nbproject
 *.atom-*
 .tern-*
 jsconfig.json
+
+functions/**/*.zip
