@@ -28,4 +28,13 @@ module "fargate" {
       # acm_certificate_arn = "arn:......"
     }
   }
+
+  # ChatOps Lambda function
+
+  slack_chatops_enabled = true
+  slack_config         = {
+    webhook_url = "https://slack.webhook.url"
+    channel     = "some_devops_channel"
+    username    = "reporter"
+  }
 }
