@@ -52,7 +52,7 @@ variable "services" {
 
 variable "slack_chatops_enabled" {
   description = "Whether or not setup a ChatOps configuration exposing the current state of a CodePipeline execution."
-  default = false
+  default     = false
 }
 
 variable "slack_config" {

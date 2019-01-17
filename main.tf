@@ -422,7 +422,7 @@ data "archive_file" "chatops" {
 }
 
 resource "aws_iam_role" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   name = "${var.name}-${terraform.workspace}-chatops-lambda-role"
 
@@ -430,7 +430,7 @@ resource "aws_iam_role" "chatops" {
 }
 
 resource "aws_iam_role_policy" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   name   = "${var.name}-${terraform.workspace}-chatops-lambda-role-policy"
   role   = "${aws_iam_role.chatops.id}"
@@ -438,7 +438,7 @@ resource "aws_iam_role_policy" "chatops" {
 }
 
 resource "aws_lambda_function" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   filename = "${element(data.archive_file.chatops.*.output_path, count.index)}"
 
@@ -458,7 +458,7 @@ resource "aws_lambda_function" "chatops" {
 }
 
 resource "aws_lambda_permission" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   statement_id  = "${var.name}-${terraform.workspace}-pipeline-executions"
   action        = "lambda:InvokeFunction"
@@ -468,7 +468,7 @@ resource "aws_lambda_permission" "chatops" {
 }
 
 data "template_file" "codepipeline_event" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   template = "${file("${path.module}/cloudwatch/codepipeline-source-event.json")}"
 
@@ -478,7 +478,7 @@ data "template_file" "codepipeline_event" {
 }
 
 resource "aws_cloudwatch_event_rule" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   name        = "${var.name}-${terraform.workspace}-pipeline-events"
   description = "Amazon CloudWatch Events rule to automatically execute a Lambda function to post messages into a Slack channel when CodePipeline state changes (Succeeded or Failed)."
@@ -487,7 +487,7 @@ resource "aws_cloudwatch_event_rule" "chatops" {
 }
 
 resource "aws_cloudwatch_event_target" "chatops" {
-  count ="${var.slack_chatops_enabled ? 1 : 0}"
+  count = "${var.slack_chatops_enabled ? 1 : 0}"
 
   rule      = "${element(aws_cloudwatch_event_rule.chatops.*.name, count.index)}"
   target_id = "${var.name}-${terraform.workspace}-codepipeline"
