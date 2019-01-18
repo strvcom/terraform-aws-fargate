@@ -104,6 +104,12 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn            = "${aws_iam_role.tasks.arn}"
 }
 
+data "aws_ecs_task_definition" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  task_definition = "${element(aws_ecs_task_definition.this.*.family, count.index)}"
+}
+
 resource "aws_cloudwatch_log_group" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
@@ -218,7 +224,7 @@ resource "aws_ecs_service" "this" {
 
   name            = "${element(keys(var.services), count.index)}"
   cluster         = "${aws_ecs_cluster.this.name}"
-  task_definition = "${element(aws_ecs_task_definition.this.*.arn, count.index)}"
+  task_definition = "${element(aws_ecs_task_definition.this.*.family, count.index)}:${max("${element(aws_ecs_task_definition.this.*.revision, count.index)}", "${element(data.aws_ecs_task_definition.this.*.revision, count.index)}")}"
   desired_count   = "${lookup(var.services[element(keys(var.services), count.index)], "replicas")}"
   launch_type     = "FARGATE"
 
