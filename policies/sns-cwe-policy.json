@@ -1,0 +1,14 @@
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "TrustCWEToPublishEventsToMyTopic",
+      "Effect": "Allow",
+      "Action": "sns:Publish",
+      "Principal": {
+        "Service": "events.amazonaws.com"
+      },
+      "Resource": "${sns_arn}"
+    }
+  ]
+}

@@ -28,4 +28,9 @@ module "fargate" {
       # acm_certificate_arn = "arn:......"
     }
   }
+
+  # If you want to set up a SNS topic receiving CodePipeline current status
+  # SNS's ARN could be use by getting the output of the module eg =>
+  # arn = "${module.fargate.codepipeline_events_sns_arn}"
+  codepipeline_events_enabled = true
 }

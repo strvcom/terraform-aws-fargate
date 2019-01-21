@@ -405,6 +405,60 @@ resource "aws_codepipeline" "this" {
   depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
 }
 
+# CODEPIPELINE STATUS SNS
+
+data "template_file" "codepipeline_events" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  template = "${file("${path.module}/cloudwatch/codepipeline-source-event.json")}"
+
+  vars {
+    codepipeline_names = "${jsonencode(aws_codepipeline.this.*.name)}"
+  }
+}
+
+data "template_file" "codepipeline_events_sns" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  template = "${file("${path.module}/policies/sns-cwe-policy.json")}"
+
+  vars {
+    sns_arn = "${aws_sns_topic.codepipeline_events.0.arn}"
+  }
+}
+
+resource "aws_cloudwatch_event_rule" "codepipeline_events" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  name        = "${var.name}-${terraform.workspace}-pipeline-events"
+  description = "Amazon CloudWatch Events rule to automatically post SNS notifications when CodePipeline state changes."
+
+  event_pattern = "${element(data.template_file.codepipeline_events.*.rendered, count.index)}"
+}
+
+resource "aws_sns_topic" "codepipeline_events" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  name         = "${var.name}-${terraform.workspace}-codepipeline-events"
+  display_name = "${var.name}-${terraform.workspace}-codepipeline-events"
+}
+
+resource "aws_sns_topic_policy" "codepipeline_events" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  arn = "${aws_sns_topic.codepipeline_events.0.arn}"
+
+  policy = "${data.template_file.codepipeline_events_sns.0.rendered}"
+}
+
+resource "aws_cloudwatch_event_target" "codepipeline_events" {
+  count = "${var.codepipeline_events_enabled ? 1 : 0}"
+
+  rule      = "${element(aws_cloudwatch_event_rule.codepipeline_events.*.name, count.index)}"
+  target_id = "${var.name}-${terraform.workspace}-codepipeline"
+  arn       = "${element(aws_sns_topic.codepipeline_events.*.arn, count.index)}"
+}
+
 ### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
 
 resource "aws_iam_role" "events" {
@@ -443,7 +497,7 @@ data "template_file" "ecr_event" {
   }
 }
 
-resource "aws_cloudwatch_event_rule" "this" {
+resource "aws_cloudwatch_event_rule" "events" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name        = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-ecr-event"
@@ -454,10 +508,10 @@ resource "aws_cloudwatch_event_rule" "this" {
   depends_on = ["aws_codepipeline.this"]
 }
 
-resource "aws_cloudwatch_event_target" "this" {
+resource "aws_cloudwatch_event_target" "events" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
-  rule      = "${element(aws_cloudwatch_event_rule.this.*.name, count.index)}"
+  rule      = "${element(aws_cloudwatch_event_rule.events.*.name, count.index)}"
   target_id = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline"
   arn       = "${element(aws_codepipeline.this.*.arn, count.index)}"
   role_arn  = "${element(aws_iam_role.events.*.arn, count.index)}"
