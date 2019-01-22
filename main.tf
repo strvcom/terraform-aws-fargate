@@ -459,6 +459,29 @@ resource "aws_cloudwatch_event_target" "codepipeline_events" {
   arn       = "${element(aws_sns_topic.codepipeline_events.*.arn, count.index)}"
 }
 
+### CLOUDWATCH BASIC DASHBOARD
+
+data "template_file" "metric_dashboard" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  template = "${file("${path.module}/metrics/basic-dashboard.json")}"
+
+  vars {
+    region         = "${var.region}"
+    alb_arn_suffix = "${element(aws_lb.this.*.arn_suffix, count.index)}"
+    cluster_name   = "${aws_ecs_cluster.this.name}"
+    service_name   = "${element(keys(var.services), count.index)}"
+  }
+}
+
+resource "aws_cloudwatch_dashboard" "this" {
+  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+
+  dashboard_name = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-metrics-dashboard"
+
+  dashboard_body = "${element(data.template_file.metric_dashboard.*.rendered, count.index)}"
+}
+
 ### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
 
 resource "aws_iam_role" "events" {
