@@ -47,3 +47,9 @@ variable "ecr_default_retention_count" {
 variable "services" {
   type = "map"
 }
+
+## CODEPIPELINE SNS EVENTS varialbes
+
+variable "codepipeline_events_enabled" {
+  default = false
+}

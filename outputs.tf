@@ -63,3 +63,9 @@ output "cloudwatch_log_groups" {
     retention_days = ["${aws_cloudwatch_log_group.this.*.retention_in_days}"]
   }
 }
+
+# CODEPIPELINE SNS EVENTS
+
+output "codepipeline_events_sns_arn" {
+  value = "${var.codepipeline_events_enabled ? join(",", aws_sns_topic.codepipeline_events.*.arn) : "not set"}"
+}
