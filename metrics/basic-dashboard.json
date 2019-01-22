@@ -1,0 +1,116 @@
+{
+  "widgets": [
+      {
+          "type": "metric",
+          "x": 0,
+          "y": 0,
+          "width": 12,
+          "height": 6,
+          "properties": {
+              "metrics": [
+                  [ "AWS/ApplicationELB", "HTTPCode_Target_2XX_Count", "LoadBalancer", "${alb_arn_suffix}", { "stat": "Sum" } ]
+              ],
+              "view": "timeSeries",
+              "stacked": false,
+              "region": "${region}",
+              "title": "HTTP 2XX count"
+          }
+      },
+      {
+          "type": "metric",
+          "x": 0,
+          "y": 12,
+          "width": 12,
+          "height": 6,
+          "properties": {
+              "view": "timeSeries",
+              "stacked": false,
+              "metrics": [
+                  [ "AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", "${alb_arn_suffix}" ]
+              ],
+              "region": "${region}",
+              "title": "HTTP 5XX count"
+          }
+      },
+      {
+          "type": "metric",
+          "x": 0,
+          "y": 6,
+          "width": 12,
+          "height": 6,
+          "properties": {
+              "view": "timeSeries",
+              "stacked": false,
+              "metrics": [
+                  [ "AWS/ApplicationELB", "HTTPCode_Target_4XX_Count", "LoadBalancer", "${alb_arn_suffix}" ]
+              ],
+              "region": "${region}",
+              "title": "HTTP 4XX count"
+          }
+      },
+      {
+          "type": "metric",
+          "x": 12,
+          "y": 0,
+          "width": 12,
+          "height": 3,
+          "properties": {
+              "metrics": [
+                  [ "AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", "${alb_arn_suffix}", { "stat": "p95" } ]
+              ],
+              "view": "timeSeries",
+              "region": "${region}",
+              "title": "Response Time (p95)",
+              "stacked": false
+          }
+      },
+      {
+          "type": "metric",
+          "x": 12,
+          "y": 3,
+          "width": 12,
+          "height": 3,
+          "properties": {
+              "metrics": [
+                  [ "AWS/ApplicationELB", "RequestCount", "LoadBalancer", "${alb_arn_suffix}", { "stat": "Sum" } ]
+              ],
+              "view": "timeSeries",
+              "region": "${region}",
+              "title": "Request Count",
+              "stacked": false
+          }
+      },
+      {
+          "type": "metric",
+          "x": 12,
+          "y": 6,
+          "width": 12,
+          "height": 6,
+          "properties": {
+              "view": "timeSeries",
+              "stacked": false,
+              "metrics": [
+                  [ "AWS/ECS", "CPUUtilization", "ServiceName", "${service_name}", "ClusterName", "${cluster_name}" ]
+              ],
+              "region": "${region}",
+              "title": "CPU Utilization"
+          }
+      },
+      {
+          "type": "metric",
+          "x": 12,
+          "y": 12,
+          "width": 12,
+          "height": 6,
+          "properties": {
+              "view": "timeSeries",
+              "stacked": false,
+              "metrics": [
+                  [ "AWS/ECS", "MemoryUtilization", "ServiceName", "${service_name}", "ClusterName", "${cluster_name}" ]
+              ],
+              "region": "${region}",
+              "title": "Memory Utilization"
+          }
+      }
+  ]
+}
