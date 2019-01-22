@@ -420,10 +420,10 @@ data "template_file" "codepipeline_events" {
 data "template_file" "codepipeline_events_sns" {
   count = "${var.codepipeline_events_enabled ? 1 : 0}"
 
-  template = "${file("${path.module}/policies/sns-cwe-policy.json")}"
+  template = "${file("${path.module}/policies/sns-cloudwatch-events-policy.json")}"
 
   vars {
-    sns_arn = "${aws_sns_topic.codepipeline_events.0.arn}"
+    sns_arn = "${element(aws_sns_topic.codepipeline_events.*.arn, count.index)}"
   }
 }
 
@@ -446,9 +446,9 @@ resource "aws_sns_topic" "codepipeline_events" {
 resource "aws_sns_topic_policy" "codepipeline_events" {
   count = "${var.codepipeline_events_enabled ? 1 : 0}"
 
-  arn = "${aws_sns_topic.codepipeline_events.0.arn}"
+  arn = "${element(aws_sns_topic.codepipeline_events.*.arn, count.index)}"
 
-  policy = "${data.template_file.codepipeline_events_sns.0.rendered}"
+  policy = "${element(data.template_file.codepipeline_events_sns.*.rendered, count.index)}"
 }
 
 resource "aws_cloudwatch_event_target" "codepipeline_events" {
