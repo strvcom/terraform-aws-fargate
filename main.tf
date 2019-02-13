@@ -297,7 +297,7 @@ resource "aws_codebuild_project" "this" {
     compute_type = "BUILD_GENERAL1_SMALL"
 
     // https://docs.aws.amazon.com/codebuild/latest/userguide/build-env-ref-available.html
-    image           = "aws/codebuild/docker:18.09.0"
+    image           = "aws/codebuild/ubuntu-base:14.04"
     type            = "LINUX_CONTAINER"
     privileged_mode = true
   }
