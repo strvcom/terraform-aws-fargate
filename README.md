@@ -8,50 +8,54 @@
 
 The goal of this effort is to provide tools/configuration files/scripts/other to make it easy to prepare AWS infrastructure for deploying Docker containers to Fargate. At the same time it should not get in the way to allow the deployment runtime to utilise other AWS resources relatively easily.
 
-The expectations currently are that Terraform will be used for setting up some kind of deployment pipeline and then the actual deployment of Docker images will be handled by some other, currently unknown tool (because deploying code with Terraform generally sucks 💩)
-
-## Why re-implement Heroku via AWS/Terraform
+## Why "re-implement" Heroku via AWS/Terraform
 
 - Cost savings
 - More control over infrastructure
 - Gain knowledge about AWS/DevOps experience
-- Sell this to clients as a service!
 - Only a single cloud provider, all under one roof -> less configuration hassle
 
 ## Ideal developer deployment lifecycle
 
-- Deploy this thing with Terraform to prepare all the infrastructure
+- Deploy this module to prepare all the infrastructure
 - Build a Docker image (not part of this project)
 - Push the Docker image to ECR
-- Docker image is picked up by AWS and deployed automatically
+- ECR triggers a new deployment via CodePipeline automatically
 
-### v1
+## Technical architecture
 
-- Automatically deploy Docker containers when pushed to ECR (at worst, manually trigger a lambda function or similar to start the deployment process)
-- Send container logs to CloudWatch
+- VPC (with public/private subnets, NAT gateway for private subnet)
+- ECR repository (Container registry)
+- ECS Cluster + Task definition
+- Application Load Balancer (optional SSL/TLS endpoint)
+- CodePipeline (triggered by new pushed Docker images)
+- CodePipeline SNS' events (cam be used to trigger something else!)
+- CloudWatch Logs group
+- CloudWatch Metrics Dashboard
 
-### v2
+![Diagram][diagram]
 
-- Predefined alarms about container status
-- Basic health information in CloudWatch Logs/Metrics
-- Autoscaling group
+## Roadmap
 
-### v3
+- [x] Automatically deploy Docker containers when pushed to ECR
+- [x] Send container logs to CloudWatch
+- [x] Basic health information in CloudWatch Logs/Metrics
+- [ ] Auto Scaling group
+- [ ] Development mode - No NAT Gateway, no Load Balancer
+- [ ] External Docker image deployment - No ECR registry for that service
+- [ ] Predefined alarms about container status
+- [ ] Predefined Docker images to simplify some aspects of deployment/runtime (ie. the image will be able to collect Node.js runtime metrics etc.)
 
-- Predefined Docker images to simplify some aspects of deployment/runtime (ie. the image will be able to collect Node.js runtime metrics etc.)
+## Usage
 
-## Technical architecture - bird's view
-
-- VPC
-- ECR (Container registry)
-- Cluster + Service + Task Definition
-- Application Load Balancer
-- Trigger to deploy newly pushed Docker images to the ECS (lambda? CloudDeploy? CloudPipeline? Other?)
-- CloudWatch Logs
+- [Basic][basic-usage]
 
 ## LICENSE
 
-See the [LICENSE](LICENSE) file for information.
+See the [LICENSE][license] file for information.
 
-[travis-badge]: https://travis-ci.com/strvcom/terraform-aws-strv-fargate.svg?branch=master
-[travis-home]: https://travis-ci.com/strvcom/terraform-aws-strv-fargate
+[travis-badge]: https://travis-ci.com/strvcom/terraform-aws-fargate.svg?branch=master
+[travis-home]: https://travis-ci.com/strvcom/terraform-aws-fargate
+[license]: LICENSE
+[diagram]: diagram.png
+[basic-usage]: examples/basic
