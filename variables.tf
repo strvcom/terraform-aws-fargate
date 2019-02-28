@@ -32,6 +32,11 @@ variable "vpc_private_subnets" {
   default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
+variable "vpc_create_nat" {
+  description = "Whether or not create a NAT gateway in the VPC managed by this module. Note that disabling this, it will forced to put ALL Fargate services inside a PUBLIC subnet with a PUBLIC ip address"
+  default     = true
+}
+
 ## LOGS
 
 variable "cloudwatch_logs_default_retention_days" {

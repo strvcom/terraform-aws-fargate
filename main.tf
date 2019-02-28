@@ -22,8 +22,8 @@ module "vpc" {
   private_subnets = "${var.vpc_private_subnets}"
 
   # NAT gateway for private subnets
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway = "${var.vpc_create_nat}"
+  single_nat_gateway = "${var.vpc_create_nat}"
 
   # Every instance deployed within the VPC will get a hostname
   enable_dns_hostnames = true
@@ -233,7 +233,10 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     security_groups = ["${element(aws_security_group.services.*.id, count.index)}"]
-    subnets         = ["${module.vpc.private_subnets}"]
+
+    # https://github.com/hashicorp/terraform/issues/18259#issuecomment-438407005
+    subnets          = ["${split(",", var.vpc_create_nat ? join(",", module.vpc.private_subnets) : join(",", module.vpc.public_subnets))}"]
+    assign_public_ip = "${!var.vpc_create_nat}"
   }
 
   load_balancer {
