@@ -40,8 +40,9 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 - [x] Automatically deploy Docker containers when pushed to ECR
 - [x] Send container logs to CloudWatch
 - [x] Basic health information in CloudWatch Logs/Metrics
+- [x] Optional NAT Gateway
+- [ ] Optional Application Load Balancer
 - [ ] Auto Scaling group
-- [ ] Development mode - No NAT Gateway, no Load Balancer
 - [ ] External Docker image deployment - No ECR registry for that service
 - [ ] Predefined alarms about container status
 - [ ] Predefined Docker images to simplify some aspects of deployment/runtime (ie. the image will be able to collect Node.js runtime metrics etc.)
@@ -49,6 +50,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 ## Usage
 
 - [Basic][basic-usage]
+- [HTTPS enabled][https-usage]
 
 ## LICENSE
 
@@ -59,3 +61,4 @@ See the [LICENSE][license] file for information.
 [license]: LICENSE
 [diagram]: diagram.png
 [basic-usage]: examples/basic
+[https-usage]: examples/https_enabled

@@ -23,9 +23,6 @@ module "fargate" {
 
       registry_retention_count = 15 # Optional. 20 by default
       logs_retention_days      = 14 # Optional. 30 by default
-
-      # To activate SSL Listener (HTTPS) set the ARN of the ACM certificate here! 🔑
-      # acm_certificate_arn = "arn:......"
     }
   }
 
