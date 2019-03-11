@@ -1,6 +1,9 @@
 sudo: required
 dist: trusty
-language: minimal
+language: go
+
+go:
+  - 1.12.x
 
 services:
   - docker
@@ -13,11 +16,23 @@ cache:
   directories:
     - .terraform
 
+env:
+  global:
+    - GOCACHE=off
+    - GO111MODULE=on
+    - PATH=$PATH:$TRAVIS_BUILD_DIR/bin
+
+    # AWS_CREDENTIALS_FILE
+    - secure: aWQuVXmzSPGSoTpwAY72mGrbB/qFyWMhgSrgHc8+rJNBv/q6QxcsxhUURKRy5CGo0pm9R+yqKVq62tSh5cX+KDxMhBEAqB2nLwWdKNXjmkwL2rN3LYHFQh+UPdySIcspuGGJBH8YeyMgIpZRwpp/hYSAWg0a1UMaG5PsF1UswEJyWiKs9DwEN4GOlYRhn4eIeZWnXZNJl2ZvkSkoPhp2HXXPrpo5JxL79XqX7F9GxLonm3JCCH/mcNb6o9U6b5I5Y8TXD0V7JKCyPsBKtQ71sSqf/S8ScPvu6M0uoyRPPAwCxPc1DN6U1OtMjTIv3msEkzvDzELaCcRysA2CX+tisHJapYxqDB0u7uyERzgueiB6uvh2j5JemuC4USQSWl3QT3pDwe2cuwQoGF7+DguFWgWpe3NI+RhtvXbM2WFUPkC/tK9p3rSpX7cc7rlZBsXvLcYF6kIJEsbp4InCUqjelCGFJVBi0I2BUfYvXAvM0gUd5zh8/uektP8xQNHwPefVDpWMcNQNBDpceZ+Y9C723IVp0sts+8w2fYl0jiwrCtt4OHVVFH/kf02VqpzsFBi6dJNW+D5ftjTv3PKDCbJUIk1CividOW8NncUi7xKxLHEhXMTFLal3ViM+VmMb6qIIcnFcoHWFPJcjenOoNpnKArQYEp+SUN9d3+vRDpWvMQo=
+
+before_install: ./ci/before_install.sh
+
 script:
-  - ./bin/terraform init -input=false
-  - ./bin/terraform validate -check-variables=false .
-  - if [[ -n "$(./bin/terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
-  - ./bin/tflint --debug
+  - terraform init -input=false
+  - terraform validate -check-variables=false .
+  - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
+  - tflint --debug
+  - $(cd test && go test)
 
 notifications:
   email: false

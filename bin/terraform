@@ -1,10 +1,16 @@
 #!/usr/bin/env bash
 
+AWS_PROFILE=${AWS_PROFILE:-"test"}
+AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-"us-east-1"}
+
 exec docker run \
   --name terraform-cli \
   --interactive \
-  --tty \
   --rm \
   --workdir /tmp/workspace/terraform \
+  --volume "${HOME}/.aws":/root/.aws \
   --volume "$(pwd)":/tmp/workspace/terraform \
+  --volume "$(cd .. && pwd)":/tmp/workspace/fargate-module \
+  --env AWS_PROFILE="${AWS_PROFILE}" \
+  --env AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}" \
   hashicorp/terraform:0.11.11 "${@}"
