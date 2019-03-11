@@ -8,7 +8,7 @@ variable "name" {
 
 variable "region" {
   description = "AWS region"
-  default     = "us-east-1"
+  default     = ""
 }
 
 ## VPC variables
