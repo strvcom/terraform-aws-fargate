@@ -18,12 +18,11 @@ cache:
 
 env:
   global:
-    - GOCACHE=off
     - GO111MODULE=on
     - PATH=$PATH:$TRAVIS_BUILD_DIR/bin
 
     # AWS_CREDENTIALS_FILE
-    - secure: aWQuVXmzSPGSoTpwAY72mGrbB/qFyWMhgSrgHc8+rJNBv/q6QxcsxhUURKRy5CGo0pm9R+yqKVq62tSh5cX+KDxMhBEAqB2nLwWdKNXjmkwL2rN3LYHFQh+UPdySIcspuGGJBH8YeyMgIpZRwpp/hYSAWg0a1UMaG5PsF1UswEJyWiKs9DwEN4GOlYRhn4eIeZWnXZNJl2ZvkSkoPhp2HXXPrpo5JxL79XqX7F9GxLonm3JCCH/mcNb6o9U6b5I5Y8TXD0V7JKCyPsBKtQ71sSqf/S8ScPvu6M0uoyRPPAwCxPc1DN6U1OtMjTIv3msEkzvDzELaCcRysA2CX+tisHJapYxqDB0u7uyERzgueiB6uvh2j5JemuC4USQSWl3QT3pDwe2cuwQoGF7+DguFWgWpe3NI+RhtvXbM2WFUPkC/tK9p3rSpX7cc7rlZBsXvLcYF6kIJEsbp4InCUqjelCGFJVBi0I2BUfYvXAvM0gUd5zh8/uektP8xQNHwPefVDpWMcNQNBDpceZ+Y9C723IVp0sts+8w2fYl0jiwrCtt4OHVVFH/kf02VqpzsFBi6dJNW+D5ftjTv3PKDCbJUIk1CividOW8NncUi7xKxLHEhXMTFLal3ViM+VmMb6qIIcnFcoHWFPJcjenOoNpnKArQYEp+SUN9d3+vRDpWvMQo=
+    - secure: PV7+QiwAZyw0rQQS9hRyBtU+gqrLj2p0C0r9xUcAQD9QRQKI7rHHplXMLXmVd2btiM+TEjiRwT1E2JNCtOzOlogDQBMhSfY6JFPD9nd/akOiaUpFE2QRYXN5IyumS8dC/udwqe0KZ8ckp/yxOiryUKKfxPOiqvzxxD+2CiCm7W9Hsbd33bbm1d9NPfT8k4yCRJ7ggtSsw8qDUsdMPn68tztl+7eo64lW4SV2+YfmWr1GARrmLCtSB6+LICeJgJ33BDrHX2T17nj9ChRjS6gjn98xEvYm1w74/FD5DNMTOzr0sFwsh9D6RnMxNS6c5CCDdsz8DOzCLVqmpG0CsDyqax3orTPWaIj0RZ1u/dQmlb8encsTSemVJPkQbOVu4dAQ0LLKgD1ou3rGeTYFcgkYftzdXw29CKu9NqFOqfym0iZIg6tdTiwd52mB/MLnfNUKkuVJZLf5AVP1CxwaRJyWBb0zrzasBJD4LILqCQmt6p+PenDNvjv7yBSa/+Ol1A9/g95ZtgnkqIUfre9kE5hTZiSJvXZPjVLc5jrPydYOKvbauLJewDKOzvpq0H6hRkSVUVk7sDnfZwb3z4eJfs+B7DZdmz+ZfVOWeNQ1kJejXhp93QrR4Z7VZjFKrOFb4GJ5qj2zhTYtOGfaUEP5SUji61ywC/F74SgTiX/62NuydUU=
 
 before_install: ./ci/before_install.sh
 
@@ -32,7 +31,7 @@ script:
   - terraform validate -check-variables=false .
   - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
   - tflint --debug
-  - $(cd test && go test)
+  - cd test && go test
 
 notifications:
   email: false
