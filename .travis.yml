@@ -31,7 +31,7 @@ script:
   - terraform validate -check-variables=false .
   - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
   - tflint --debug
-  - cd test && go test
+  - go test -v $(go list ./test/)
 
 notifications:
   email: false
