@@ -199,7 +199,7 @@ resource "aws_lb" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name            = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-alb"
-  subnets         = ["${module.vpc.public_subnets}"]
+  subnets         = ["${slice(module.vpc.public_subnets, 0, length(data.aws_availability_zones.this.names))}"]
   security_groups = ["${aws_security_group.web.id}"]
 }
 
