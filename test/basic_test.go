@@ -13,8 +13,9 @@ import (
 func TestBasicExample(t *testing.T) {
 	expectedName := fmt.Sprintf("fargate-%s", strings.ToLower(random.UniqueId()))
 
-	// Pick a random AWS region to test in. This helps ensure the module works in all regions.
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
+	// Pick a random Fargate-enabled AWS region to test in. This helps ensure the module works in all regions.
+	forbiddenRegions := []string{"sa-east-1", "eu-west-3", "eu-north-1"}
+	awsRegion := aws.GetRandomStableRegion(t, nil, forbiddenRegions)
 
 	terraformOptions := &terraform.Options{
 		// The path to where our Terraform code is located
