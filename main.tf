@@ -311,7 +311,7 @@ resource "aws_ecs_service" "this" {
 
     # https://github.com/hashicorp/terraform/issues/18259#issuecomment-438407005
     subnets          = [split(",", var.vpc_create_nat ? join(",", local.vpc_private_subnets_ids) : join(",", local.vpc_public_subnets_ids))]
-    assign_public_ip = !var.vpc_create_nat
+    assign_public_ip = ! var.vpc_create_nat
   }
 
   load_balancer {
