@@ -8,6 +8,8 @@ terraform {
 
 data "aws_availability_zones" "this" {}
 
+data "aws_region" "current" {}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "1.46.0"
@@ -87,7 +89,7 @@ data "template_file" "tasks" {
     container_port = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
     repository_url = "${element(aws_ecr_repository.this.*.repository_url, count.index)}"
     log_group      = "${element(aws_cloudwatch_log_group.this.*.name, count.index)}"
-    region         = "${var.region}"
+    region         = "${var.region != "" ? var.region : data.aws_region.current.name}"
   }
 }
 
@@ -197,7 +199,7 @@ resource "aws_lb" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name            = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-alb"
-  subnets         = ["${module.vpc.public_subnets}"]
+  subnets         = ["${slice(module.vpc.public_subnets, 0, length(data.aws_availability_zones.this.names))}"]
   security_groups = ["${aws_security_group.web.id}"]
 }
 
@@ -470,7 +472,7 @@ data "template_file" "metric_dashboard" {
   template = "${file("${path.module}/metrics/basic-dashboard.json")}"
 
   vars {
-    region         = "${var.region}"
+    region         = "${var.region != "" ? var.region : data.aws_region.current.name}"
     alb_arn_suffix = "${element(aws_lb.this.*.arn_suffix, count.index)}"
     cluster_name   = "${aws_ecs_cluster.this.name}"
     service_name   = "${element(keys(var.services), count.index)}"
