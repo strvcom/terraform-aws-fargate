@@ -41,8 +41,8 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 - [x] Send container logs to CloudWatch
 - [x] Basic health information in CloudWatch Logs/Metrics
 - [x] Optional NAT Gateway
+- [x] App Auto Scaling
 - [ ] Optional Application Load Balancer
-- [ ] Auto Scaling group
 - [ ] External Docker image deployment - No ECR registry for that service
 - [ ] Predefined alarms about container status
 - [ ] Predefined Docker images to simplify some aspects of deployment/runtime (ie. the image will be able to collect Node.js runtime metrics etc.)
@@ -51,6 +51,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 
 - [Basic][basic-usage]
 - [HTTPS enabled][https-usage]
+- [AutoScaling][autoscaling-usage]
 
 ## LICENSE
 
@@ -62,3 +63,4 @@ See the [LICENSE][license] file for information.
 [diagram]: diagram.png
 [basic-usage]: examples/basic
 [https-usage]: examples/https_enabled
+[autoscaling-usage]: examples/autoscaling
