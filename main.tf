@@ -274,6 +274,8 @@ resource "aws_appautoscaling_target" "this" {
   role_arn           = "${aws_iam_role.autoscaling.arn}"
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
+
+  depends_on = ["aws_ecs_service.this"]
 }
 
 resource "aws_appautoscaling_policy" "this" {
