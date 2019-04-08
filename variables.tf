@@ -55,6 +55,10 @@ variable "services" {
 
 ## ALB variables
 
+variable "alb_default_health_check_interval" {
+  default = 30
+}
+
 variable "alb_default_health_check_path" {
   default = "/"
 }

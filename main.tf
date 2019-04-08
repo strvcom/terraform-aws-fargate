@@ -191,7 +191,7 @@ resource "aws_lb_target_group" "this" {
   target_type = "ip"
 
   health_check {
-    interval            = 20
+    interval            = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_interval", var.alb_default_health_check_interval)}"
     path                = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)}"
     healthy_threshold   = 3
     unhealthy_threshold = 3

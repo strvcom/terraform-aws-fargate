@@ -24,7 +24,8 @@ module "fargate" {
       registry_retention_count = 15 # Optional. 20 by default
       logs_retention_days      = 14 # Optional. 30 by default
 
-      health_check_path = "/health-check" # Optional. "/" by default
+      health_check_interval = 100             # Optional. In seconds. 30 by default
+      health_check_path     = "/health-check" # Optional. "/" by default
     }
   }
 
