@@ -53,6 +53,12 @@ variable "services" {
   type = "map"
 }
 
+## ALB variables
+
+variable "alb_default_health_check_path" {
+  default = "/"
+}
+
 ## CODEPIPELINE SNS EVENTS varialbes
 
 variable "codepipeline_events_enabled" {

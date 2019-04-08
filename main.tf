@@ -190,6 +190,14 @@ resource "aws_lb_target_group" "this" {
   vpc_id      = "${module.vpc.vpc_id}"
   target_type = "ip"
 
+  health_check {
+    interval            = 20
+    path                = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)}"
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    matcher             = "200-299"
+  }
+
   lifecycle {
     create_before_destroy = true
   }
