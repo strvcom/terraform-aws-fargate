@@ -152,7 +152,7 @@ resource "aws_security_group" "services" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   vpc_id = "${module.vpc.vpc_id}"
-  name   = "${var.name}-${terraform.workspace}-services-sg"
+  name   = "${var.name}-${element(keys(var.services), count.index)}-${terraform.workspace}-services-sg"
 
   egress {
     from_port   = 0
@@ -184,7 +184,7 @@ resource "random_id" "target_group_sufix" {
 resource "aws_lb_target_group" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
-  name        = "${var.name}-${element(keys(var.services), count.index)}-${random_id.target_group_sufix.hex}"
+  name        = "${var.name}-${element(keys(var.services), count.index)}-${element(random_id.target_group_sufix.*.hex, count.index)}"
   port        = "${element(random_id.target_group_sufix.*.keepers.container_port, count.index)}"
   protocol    = "HTTP"
   vpc_id      = "${module.vpc.vpc_id}"
@@ -396,7 +396,7 @@ resource "aws_iam_role_policy" "codepipeline" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline-role-policy"
-  role   = "${aws_iam_role.codepipeline.id}"
+  role   = "${element(aws_iam_role.codepipeline.*.id, count.index)}"
   policy = "${element(data.template_file.codepipeline.*.rendered, count.index)}"
 }
 
