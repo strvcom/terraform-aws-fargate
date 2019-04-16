@@ -1,7 +1,19 @@
 # Main Module file
 
 terraform {
-  required_version = "~> 0.11.11"
+  required_version = "~> 0.11.13"
+}
+
+provider "aws" {
+  version = "~> 2.6"
+}
+
+provider "random" {
+  version = "~> 2.1"
+}
+
+provider "template" {
+  version = "~> 2.1"
 }
 
 # VPC CONFIGURATION
@@ -12,7 +24,7 @@ data "aws_region" "current" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "1.46.0"
+  version = "1.60.0"
 
   create_vpc = "${var.vpc_create}"
 
