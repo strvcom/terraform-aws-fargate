@@ -16,6 +16,8 @@ module "fargate" {
 
   name = "${var.name}"
 
+  vpc_cidr = "10.1.0.0/16"
+
   services = {
     api = {
       task_definition = "api.json"
