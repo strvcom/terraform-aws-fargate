@@ -4,10 +4,6 @@ terraform {
   required_version = "~> 0.11.13"
 }
 
-provider "aws" {
-  version = "~> 2.6"
-}
-
 provider "random" {
   version = "~> 2.1"
 }
