@@ -15,8 +15,25 @@ provider "template" {
 # VPC CONFIGURATION
 
 locals {
-  vpc_public_subnets  = "${split(",", length(var.vpc_public_subnets) > 0 ? join(",", var.vpc_public_subnets) : join(",", list(cidrsubnet(var.vpc_cidr, 8, 1), cidrsubnet(var.vpc_cidr, 8, 2), cidrsubnet(var.vpc_cidr, 8, 3))))}"
-  vpc_private_subnets = "${split(",", length(var.vpc_private_subnets) > 0 ? join(",", var.vpc_private_subnets) : join(",", list(cidrsubnet(var.vpc_cidr, 8, 101), cidrsubnet(var.vpc_cidr, 8, 102), cidrsubnet(var.vpc_cidr, 8, 103))))}"
+  vpc_public_subnets = "${split(",",
+    length(var.vpc_public_subnets) > 0
+    ? join(",", var.vpc_public_subnets)
+    : join(",", list(
+        cidrsubnet(var.vpc_cidr, 8, 1),
+        cidrsubnet(var.vpc_cidr, 8, 2),
+        cidrsubnet(var.vpc_cidr, 8, 3)
+      ))
+  )}"
+
+  vpc_private_subnets = "${split(",",
+    length(var.vpc_private_subnets) > 0
+    ? join(",", var.vpc_private_subnets)
+    : join(",", list(
+        cidrsubnet(var.vpc_cidr, 8, 101),
+        cidrsubnet(var.vpc_cidr, 8, 102),
+        cidrsubnet(var.vpc_cidr, 8, 103)
+      ))
+  )}"
 }
 
 data "aws_availability_zones" "this" {}
