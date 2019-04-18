@@ -24,12 +24,12 @@ variable "vpc_cidr" {
 
 variable "vpc_public_subnets" {
   description = "List of public subnets to be used for the vpc"
-  default     = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+  default     = []
 }
 
 variable "vpc_private_subnets" {
   description = "List of private subnets to be used for the vpc"
-  default     = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  default     = []
 }
 
 variable "vpc_create_nat" {
