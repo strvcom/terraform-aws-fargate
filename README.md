@@ -52,6 +52,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 - [Basic][basic-usage]
 - [HTTPS enabled][https-usage]
 - [AutoScaling][autoscaling-usage]
+- [External VPC][external-vpc-usage]
 
 ## LICENSE
 
@@ -64,3 +65,4 @@ See the [LICENSE][license] file for information.
 [basic-usage]: examples/basic
 [https-usage]: examples/https_enabled
 [autoscaling-usage]: examples/autoscaling
+[external-vpc-usage]: examples/external_vpc
