@@ -22,10 +22,10 @@ locals {
     || !var.vpc_create
     ? join(",", var.vpc_public_subnets)
     : join(",", list(
-        cidrsubnet(var.vpc_cidr, 8, 1),
-        cidrsubnet(var.vpc_cidr, 8, 2),
-        cidrsubnet(var.vpc_cidr, 8, 3)
-      ))
+      cidrsubnet(var.vpc_cidr, 8, 1),
+      cidrsubnet(var.vpc_cidr, 8, 2),
+      cidrsubnet(var.vpc_cidr, 8, 3)
+    ))
   )
 
   vpc_private_subnets = split(",",
@@ -33,10 +33,10 @@ locals {
     || !var.vpc_create
     ? join(",", var.vpc_private_subnets)
     : join(",", list(
-        cidrsubnet(var.vpc_cidr, 8, 101),
-        cidrsubnet(var.vpc_cidr, 8, 102),
-        cidrsubnet(var.vpc_cidr, 8, 103)
-      ))
+      cidrsubnet(var.vpc_cidr, 8, 101),
+      cidrsubnet(var.vpc_cidr, 8, 102),
+      cidrsubnet(var.vpc_cidr, 8, 103)
+    ))
   )
 
   vpc_private_subnets_ids = split(",",
