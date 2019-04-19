@@ -93,7 +93,7 @@ data "template_file" "ecr-lifecycle" {
 
   template = file("${path.module}/policies/ecr-lifecycle-policy.json")
 
-  vars {
+  vars = {
     count = lookup(var.services[element(keys(var.services), count.index)], "registry_retention_count", var.ecr_default_retention_count)
   }
 }
@@ -130,7 +130,7 @@ data "template_file" "tasks" {
 
   template = file("${path.cwd}/${lookup(var.services[element(keys(var.services), count.index)], "task_definition")}")
 
-  vars {
+  vars = {
     container_name = element(keys(var.services), count.index)
     container_port = lookup(var.services[element(keys(var.services), count.index)], "container_port")
     repository_url = element(aws_ecr_repository.this.*.repository_url, count.index)
@@ -390,7 +390,7 @@ resource "aws_iam_role" "codebuild" {
 data "template_file" "codebuild" {
   template = file("${path.module}/policies/codebuild-role-policy.json")
 
-  vars {
+  vars = {
     aws_s3_bucket_arn = aws_s3_bucket.this.arn
   }
 }
@@ -406,7 +406,7 @@ data "template_file" "buildspec" {
 
   template = file("${path.module}/build/buildspec.yml")
 
-  vars {
+  vars = {
     container_name = element(keys(var.services), count.index)
   }
 }
@@ -451,7 +451,7 @@ data "template_file" "codepipeline" {
 
   template = file("${path.module}/policies/codepipeline-role-policy.json")
 
-  vars {
+  vars = {
     aws_s3_bucket_arn  = aws_s3_bucket.this.arn
     ecr_repository_arn = element(aws_ecr_repository.this.*.arn, count.index)
   }
@@ -541,7 +541,7 @@ data "template_file" "codepipeline_events" {
 
   template = file("${path.module}/cloudwatch/codepipeline-source-event.json")
 
-  vars {
+  vars = {
     codepipeline_names = jsonencode(aws_codepipeline.this.*.name)
   }
 }
@@ -551,7 +551,7 @@ data "template_file" "codepipeline_events_sns" {
 
   template = file("${path.module}/policies/sns-cloudwatch-events-policy.json")
 
-  vars {
+  vars = {
     sns_arn = element(aws_sns_topic.codepipeline_events.*.arn, count.index)
   }
 }
@@ -595,7 +595,7 @@ data "template_file" "metric_dashboard" {
 
   template = file("${path.module}/metrics/basic-dashboard.json")
 
-  vars {
+  vars = {
     region         = var.region != "" ? var.region : data.aws_region.current.name
     alb_arn_suffix = element(aws_lb.this.*.arn_suffix, count.index)
     cluster_name   = aws_ecs_cluster.this.name
@@ -626,7 +626,7 @@ data "template_file" "events" {
 
   template = file("${path.module}/policies/events-role-policy.json")
 
-  vars {
+  vars = {
     codepipeline_arn = element(aws_codepipeline.this.*.arn, count.index)
   }
 }
@@ -644,7 +644,7 @@ data "template_file" "ecr_event" {
 
   template = file("${path.module}/cloudwatch/ecr-source-event.json")
 
-  vars {
+  vars = {
     ecr_repository_name = element(aws_ecr_repository.this.*.name, count.index)
   }
 }
