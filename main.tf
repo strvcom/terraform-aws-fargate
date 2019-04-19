@@ -15,8 +15,11 @@ provider "template" {
 # VPC CONFIGURATION
 
 locals {
+  vpc_id = "${!var.vpc_create ? var.vpc_external_id : module.vpc.vpc_id}"
+
   vpc_public_subnets = "${split(",",
     length(var.vpc_public_subnets) > 0
+    || !var.vpc_create
     ? join(",", var.vpc_public_subnets)
     : join(",", list(
         cidrsubnet(var.vpc_cidr, 8, 1),
@@ -27,12 +30,25 @@ locals {
 
   vpc_private_subnets = "${split(",",
     length(var.vpc_private_subnets) > 0
+    || !var.vpc_create
     ? join(",", var.vpc_private_subnets)
     : join(",", list(
         cidrsubnet(var.vpc_cidr, 8, 101),
         cidrsubnet(var.vpc_cidr, 8, 102),
         cidrsubnet(var.vpc_cidr, 8, 103)
       ))
+  )}"
+
+  vpc_private_subnets_ids = "${split(",",
+    !var.vpc_create
+    ? join(",", var.vpc_external_private_subnets_ids)
+    : join(",", module.vpc.private_subnets)
+  )}"
+
+  vpc_public_subnets_ids = "${split(",",
+    !var.vpc_create
+    ? join(",", var.vpc_external_public_subnets_ids)
+    : join(",", module.vpc.public_subnets)
   )}"
 }
 
@@ -153,7 +169,7 @@ resource "aws_cloudwatch_log_group" "this" {
 # SECURITY GROUPS
 
 resource "aws_security_group" "web" {
-  vpc_id = "${module.vpc.vpc_id}"
+  vpc_id = "${local.vpc_id}"
   name   = "${var.name}-${terraform.workspace}-web-sg"
 }
 
@@ -190,7 +206,7 @@ resource "aws_security_group_rule" "web_ingress_https" {
 resource "aws_security_group" "services" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
-  vpc_id = "${module.vpc.vpc_id}"
+  vpc_id = "${local.vpc_id}"
   name   = "${var.name}-${element(keys(var.services), count.index)}-${terraform.workspace}-services-sg"
 }
 
@@ -236,7 +252,7 @@ resource "aws_lb_target_group" "this" {
   name        = "${var.name}-${element(keys(var.services), count.index)}-${element(random_id.target_group_sufix.*.hex, count.index)}"
   port        = "${element(random_id.target_group_sufix.*.keepers.container_port, count.index)}"
   protocol    = "HTTP"
-  vpc_id      = "${module.vpc.vpc_id}"
+  vpc_id      = "${local.vpc_id}"
   target_type = "ip"
 
   health_check {
@@ -256,7 +272,7 @@ resource "aws_lb" "this" {
   count = "${length(var.services) > 0 ? length(var.services) : 0}"
 
   name            = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-alb"
-  subnets         = ["${slice(module.vpc.public_subnets, 0, min(length(data.aws_availability_zones.this.names), length(module.vpc.public_subnets)))}"]
+  subnets         = ["${slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))}"]
   security_groups = ["${aws_security_group.web.id}"]
 }
 
@@ -294,7 +310,7 @@ resource "aws_ecs_service" "this" {
     security_groups = ["${element(aws_security_group.services.*.id, count.index)}"]
 
     # https://github.com/hashicorp/terraform/issues/18259#issuecomment-438407005
-    subnets          = ["${split(",", var.vpc_create_nat ? join(",", module.vpc.private_subnets) : join(",", module.vpc.public_subnets))}"]
+    subnets          = ["${split(",", var.vpc_create_nat ? join(",", local.vpc_private_subnets_ids) : join(",", local.vpc_public_subnets_ids))}"]
     assign_public_ip = "${!var.vpc_create_nat}"
   }
 
