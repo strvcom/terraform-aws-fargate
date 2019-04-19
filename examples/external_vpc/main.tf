@@ -16,7 +16,6 @@ variable "private_subnets_cidrs" {
   default = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 }
 
-
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "1.60.0"

@@ -19,7 +19,7 @@ variable "vpc_create" {
 }
 
 variable "vpc_cidr" {
-  description = "CIDR to be used for the VPC"
+  description = "CIDR to be used by the VPC"
   default     = "10.0.0.0/16"
 }
 
