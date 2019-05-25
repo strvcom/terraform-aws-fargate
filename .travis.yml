@@ -28,7 +28,7 @@ before_install: ./ci/before_install.sh
 
 script:
   - terraform init -input=false
-  - terraform validate -check-variables=false .
+  # - terraform validate -check-variables=false .
   - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
   - tflint
   - go test -v $(go list ./test/)
