@@ -7,7 +7,7 @@ require (
 	github.com/boombuler/barcode v1.0.0 // indirect
 	github.com/go-sql-driver/mysql v1.4.1 // indirect
 	github.com/google/uuid v1.1.1 // indirect
-	github.com/gruntwork-io/terratest v0.14.2
+	github.com/gruntwork-io/terratest v0.16.0
 	github.com/pquerna/otp v1.1.0 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
 	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
