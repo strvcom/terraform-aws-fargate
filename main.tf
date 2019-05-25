@@ -58,7 +58,7 @@ data "aws_region" "current" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "1.60.0"
+  version = "2.0.0"
 
   create_vpc = var.vpc_create
 
@@ -272,7 +272,7 @@ resource "aws_lb" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
   name            = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-alb"
-  subnets         = [slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))]
+  subnets         = slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))
   security_groups = [aws_security_group.web.id]
 }
 
@@ -309,8 +309,7 @@ resource "aws_ecs_service" "this" {
   network_configuration {
     security_groups = [element(aws_security_group.services.*.id, count.index)]
 
-    # https://github.com/hashicorp/terraform/issues/18259#issuecomment-438407005
-    subnets          = [split(",", var.vpc_create_nat ? join(",", local.vpc_private_subnets_ids) : join(",", local.vpc_public_subnets_ids))]
+    subnets          = var.vpc_create_nat ? local.vpc_private_subnets_ids : local.vpc_public_subnets_ids
     assign_public_ip = ! var.vpc_create_nat
   }
 
@@ -487,7 +486,7 @@ resource "aws_codepipeline" "this" {
       version          = "1"
       output_artifacts = ["source"]
 
-      configuration {
+      configuration = {
         RepositoryName = element(aws_ecr_repository.this.*.name, count.index)
         ImageTag       = "latest"
       }
@@ -506,7 +505,7 @@ resource "aws_codepipeline" "this" {
       input_artifacts  = ["source"]
       output_artifacts = ["imagedefinitions"]
 
-      configuration {
+      configuration = {
         ProjectName = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-builds"
       }
     }
@@ -523,7 +522,7 @@ resource "aws_codepipeline" "this" {
       input_artifacts = ["imagedefinitions"]
       version         = "1"
 
-      configuration {
+      configuration = {
         ClusterName = aws_ecs_cluster.this.name
         ServiceName = element(keys(var.services), count.index)
         FileName    = "imagedefinitions.json"
