@@ -1,9 +1,9 @@
 terraform {
-  required_version = "~> 0.11.13"
+  required_version = "~> 0.12.0"
 }
 
 provider "aws" {
-  version = "~> 2.6"
+  version = "~> 2.12.0"
   profile = "test"
 }
 
