@@ -30,7 +30,7 @@ script:
   - terraform init -input=false
   - terraform validate -check-variables=false .
   - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
-  # - tflint bug TODO: Enable again when 0.12 support gets ready -> https://github.com/wata727/tflint#current-project-status
+  - tflint
   - go test -v $(go list ./test/)
 
 notifications:
