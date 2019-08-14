@@ -4,4 +4,4 @@ exec docker run \
   --name tflint \
   --rm \
   --volume "$(pwd)":/data \
-  wata727/tflint:0.8.0 "${@}"
+  wata727/tflint:0.9.3 "${@}"
