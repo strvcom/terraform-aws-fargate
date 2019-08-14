@@ -28,9 +28,9 @@ before_install: ./ci/before_install.sh
 
 script:
   - terraform init -input=false
-  - terraform validate -check-variables=false .
+  - AWS_DEFAULT_REGION=us-east-1 terraform validate # TODO: Remove AWS_DEFAULT_REGION variable once https://github.com/hashicorp/terraform/issues/21408#issuecomment-495746582 gets fixed!
   - if [[ -n "$(terraform fmt -write=false)" ]]; then echo "Some terraform files need be formatted, run 'terraform fmt' to fix"; exit 1; fi
-  - tflint --debug
+  - tflint
   - go test -v $(go list ./test/)
 
 notifications:

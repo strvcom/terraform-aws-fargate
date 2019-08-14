@@ -1,5 +1,7 @@
 github.com/aws/aws-sdk-go v1.17.14 h1:IjqZDIQoLyZ48A93BxVrZOaIGgZPRi4nXt6WQUMJplY=
 github.com/aws/aws-sdk-go v1.17.14/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
+github.com/aws/aws-sdk-go v1.19.38 h1:WKjobgPO4Ua1ww2NJJl2/zQNreUZxvqmEzwMlRjjm9g=
+github.com/aws/aws-sdk-go v1.19.38/go.mod h1:KmX6BPdI08NWTb3/sm4ZGu5ShLoqVDhKgpiN924inxo=
 github.com/boombuler/barcode v1.0.0 h1:s1TvRnXwL2xJRaccrdcBQMZxq6X7DvsMogtmJeHDdrc=
 github.com/boombuler/barcode v1.0.0/go.mod h1:paBWMcWSl3LHKBqUq+rly7CNSldXjb2rDl3JlRe0mD8=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
@@ -10,6 +12,8 @@ github.com/google/uuid v1.1.1 h1:Gkbcsh/GbpXz7lPftLA3P6TYMwjCLYm83jiFQZF/3gY=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/gruntwork-io/terratest v0.14.2 h1:A9YUZZlXE/syTnIVeuqhqoyVO5CUJS5Kasvyr5IUsv8=
 github.com/gruntwork-io/terratest v0.14.2/go.mod h1:NjUn6YXA5Skxt8Rs20t3isYx5Rl+EgvGB8/+RRXddqk=
+github.com/gruntwork-io/terratest v0.16.0 h1:8dDdkAzqwVDclmefcy//oBPWs5bVrWuKYCUwG0WFG4c=
+github.com/gruntwork-io/terratest v0.16.0/go.mod h1:NjUn6YXA5Skxt8Rs20t3isYx5Rl+EgvGB8/+RRXddqk=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af h1:pmfjZENx5imkbgOkpRUYLnmbU7UEFbjtDA2hxJ1ichM=
 github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af/go.mod h1:Nht3zPeWKUH0NzdCt2Blrr5ys8VGpn0CEB0cQHVjt7k=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
