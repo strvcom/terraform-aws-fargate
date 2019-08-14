@@ -19,11 +19,11 @@ provider "template" {
 # VPC CONFIGURATION
 
 locals {
-  vpc_id = !var.vpc_create ? var.vpc_external_id : module.vpc.vpc_id
+  vpc_id = ! var.vpc_create ? var.vpc_external_id : module.vpc.vpc_id
 
   vpc_public_subnets = split(",",
     length(var.vpc_public_subnets) > 0
-    || !var.vpc_create
+    || ! var.vpc_create
     ? join(",", var.vpc_public_subnets)
     : join(",", list(
       cidrsubnet(var.vpc_cidr, 8, 1),
@@ -34,7 +34,7 @@ locals {
 
   vpc_private_subnets = split(",",
     length(var.vpc_private_subnets) > 0
-    || !var.vpc_create
+    || ! var.vpc_create
     ? join(",", var.vpc_private_subnets)
     : join(",", list(
       cidrsubnet(var.vpc_cidr, 8, 101),
@@ -44,13 +44,13 @@ locals {
   )
 
   vpc_private_subnets_ids = split(",",
-    !var.vpc_create
+    ! var.vpc_create
     ? join(",", var.vpc_external_private_subnets_ids)
     : join(",", module.vpc.private_subnets)
   )
 
   vpc_public_subnets_ids = split(",",
-    !var.vpc_create
+    ! var.vpc_create
     ? join(",", var.vpc_external_public_subnets_ids)
     : join(",", module.vpc.public_subnets)
   )
