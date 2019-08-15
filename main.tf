@@ -241,8 +241,8 @@ resource "aws_lb_target_group" "this" {
   target_type = "ip"
 
   health_check {
-    interval            = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_interval", var.alb_default_health_check_interval)}"
-    path                = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)}"
+    interval            = lookup(var.services[element(keys(var.services), count.index)], "health_check_interval", var.alb_default_health_check_interval)
+    path                = lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)
     healthy_threshold   = 3
     unhealthy_threshold = 3
     matcher             = "200-299"
@@ -282,7 +282,7 @@ resource "aws_lb_listener" "this" {
 resource "aws_ecs_service" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  name            = "${element(keys(var.services), count.index)}"
+  name            = element(keys(var.services), count.index)
   cluster         = aws_ecs_cluster.this.name
   task_definition = "${element(aws_ecs_task_definition.this.*.family, count.index)}:${max("${element(aws_ecs_task_definition.this.*.revision, count.index)}", "${element(data.aws_ecs_task_definition.this.*.revision, count.index)}")}"
   desired_count   = lookup(var.services[element(keys(var.services), count.index)], "replicas")
@@ -313,22 +313,22 @@ resource "aws_ecs_service" "this" {
 
 resource "aws_iam_role" "autoscaling" {
   name               = "${var.name}-${terraform.workspace}-appautoscaling-role"
-  assume_role_policy = "${file("${path.module}/policies/appautoscaling-role.json")}"
+  assume_role_policy = file("${path.module}/policies/appautoscaling-role.json")
 }
 
 resource "aws_iam_role_policy" "autoscaling" {
   name   = "${var.name}-${terraform.workspace}-appautoscaling-policy"
-  policy = "${file("${path.module}/policies/appautoscaling-role-policy.json")}"
-  role   = "${aws_iam_role.autoscaling.id}"
+  policy = file("${path.module}/policies/appautoscaling-role-policy.json")
+  role   = aws_iam_role.autoscaling.id
 }
 
 resource "aws_appautoscaling_target" "this" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  count = length(var.services) > 0 ? length(var.services) : 0
 
-  max_capacity       = "${lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_replicas", lookup(var.services[element(keys(var.services), count.index)], "replicas"))}"
-  min_capacity       = "${lookup(var.services[element(keys(var.services), count.index)], "replicas")}"
+  max_capacity       = lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_replicas", lookup(var.services[element(keys(var.services), count.index)], "replicas"))
+  min_capacity       = lookup(var.services[element(keys(var.services), count.index)], "replicas")
   resource_id        = "service/${aws_ecs_cluster.this.name}/${element(keys(var.services), count.index)}"
-  role_arn           = "${aws_iam_role.autoscaling.arn}"
+  role_arn           = aws_iam_role.autoscaling.arn
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
@@ -336,16 +336,16 @@ resource "aws_appautoscaling_target" "this" {
 }
 
 resource "aws_appautoscaling_policy" "this" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  count = length(var.services) > 0 ? length(var.services) : 0
 
   name               = "${element(keys(var.services), count.index)}-autoscaling-policy"
   policy_type        = "TargetTrackingScaling"
-  resource_id        = "${element(aws_appautoscaling_target.this.*.resource_id, count.index)}"
-  scalable_dimension = "${element(aws_appautoscaling_target.this.*.scalable_dimension, count.index)}"
-  service_namespace  = "${element(aws_appautoscaling_target.this.*.service_namespace, count.index)}"
+  resource_id        = element(aws_appautoscaling_target.this.*.resource_id, count.index)
+  scalable_dimension = element(aws_appautoscaling_target.this.*.scalable_dimension, count.index)
+  service_namespace  = element(aws_appautoscaling_target.this.*.service_namespace, count.index)
 
   target_tracking_scaling_policy_configuration {
-    target_value = "${lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_cpu_util", 100)}"
+    target_value = lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_cpu_util", 100)
 
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
