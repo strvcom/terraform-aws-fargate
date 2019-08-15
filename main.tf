@@ -62,7 +62,7 @@ data "aws_region" "current" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.0.0"
+  version = "2.9.0"
 
   create_vpc = var.vpc_create
 
