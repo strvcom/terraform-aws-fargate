@@ -175,36 +175,27 @@ resource "aws_cloudwatch_log_group" "this" {
 resource "aws_security_group" "web" {
   vpc_id = local.vpc_id
   name   = "${var.name}-${terraform.workspace}-web-sg"
-}
 
-resource "aws_security_group_rule" "web_egress" {
-  type        = "egress"
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  security_group_id = "${aws_security_group.web.id}"
-}
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-resource "aws_security_group_rule" "web_ingress_http" {
-  type        = "ingress"
-  from_port   = 80
-  to_port     = 80
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${aws_security_group.web.id}"
-}
-
-resource "aws_security_group_rule" "web_ingress_https" {
-  type        = "ingress"
-  from_port   = 443
-  to_port     = 443
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${aws_security_group.web.id}"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_security_group" "services" {
@@ -212,30 +203,20 @@ resource "aws_security_group" "services" {
 
   vpc_id = local.vpc_id
   name   = "${var.name}-${element(keys(var.services), count.index)}-${terraform.workspace}-services-sg"
-}
 
-resource "aws_security_group_rule" "services_egress" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  ingress {
+    from_port       = lookup(var.services[element(keys(var.services), count.index)], "container_port")
+    to_port         = lookup(var.services[element(keys(var.services), count.index)], "container_port")
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web.id]
+  }
 
-  type        = "egress"
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${element(aws_security_group.services.*.id, count.index)}"
-}
-
-resource "aws_security_group_rule" "services_ingress" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
-
-  type                     = "ingress"
-  from_port                = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
-  to_port                  = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.web.id}"
-
-  security_group_id = "${element(aws_security_group.services.*.id, count.index)}"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 # ALBs
