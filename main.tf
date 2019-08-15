@@ -62,7 +62,7 @@ data "aws_region" "current" {}
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.0.0"
+  version = "2.9.0"
 
   create_vpc = var.vpc_create
 
@@ -105,9 +105,9 @@ data "template_file" "ecr-lifecycle" {
 resource "aws_ecr_lifecycle_policy" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  repository = element(aws_ecr_repository.this.*.name, count.index)
+  repository = element(aws_ecr_repository.this[*].name, count.index)
 
-  policy = element(data.template_file.ecr-lifecycle.*.rendered, count.index)
+  policy = element(data.template_file.ecr-lifecycle[*].rendered, count.index)
 }
 
 # ECS CLUSTER
@@ -137,8 +137,8 @@ data "template_file" "tasks" {
   vars = {
     container_name = element(keys(var.services), count.index)
     container_port = lookup(var.services[element(keys(var.services), count.index)], "container_port")
-    repository_url = element(aws_ecr_repository.this.*.repository_url, count.index)
-    log_group      = element(aws_cloudwatch_log_group.this.*.name, count.index)
+    repository_url = element(aws_ecr_repository.this[*].repository_url, count.index)
+    log_group      = element(aws_cloudwatch_log_group.this[*].name, count.index)
     region         = var.region != "" ? var.region : data.aws_region.current.name
   }
 }
@@ -147,7 +147,7 @@ resource "aws_ecs_task_definition" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
   family                   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}"
-  container_definitions    = element(data.template_file.tasks.*.rendered, count.index)
+  container_definitions    = element(data.template_file.tasks[*].rendered, count.index)
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = lookup(var.services[element(keys(var.services), count.index)], "cpu")
@@ -159,7 +159,7 @@ resource "aws_ecs_task_definition" "this" {
 data "aws_ecs_task_definition" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  task_definition = element(aws_ecs_task_definition.this.*.family, count.index)
+  task_definition = element(aws_ecs_task_definition.this[*].family, count.index)
 }
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -175,36 +175,27 @@ resource "aws_cloudwatch_log_group" "this" {
 resource "aws_security_group" "web" {
   vpc_id = local.vpc_id
   name   = "${var.name}-${terraform.workspace}-web-sg"
-}
 
-resource "aws_security_group_rule" "web_egress" {
-  type        = "egress"
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-  security_group_id = "${aws_security_group.web.id}"
-}
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
-resource "aws_security_group_rule" "web_ingress_http" {
-  type        = "ingress"
-  from_port   = 80
-  to_port     = 80
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${aws_security_group.web.id}"
-}
-
-resource "aws_security_group_rule" "web_ingress_https" {
-  type        = "ingress"
-  from_port   = 443
-  to_port     = 443
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${aws_security_group.web.id}"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 resource "aws_security_group" "services" {
@@ -212,30 +203,20 @@ resource "aws_security_group" "services" {
 
   vpc_id = local.vpc_id
   name   = "${var.name}-${element(keys(var.services), count.index)}-${terraform.workspace}-services-sg"
-}
 
-resource "aws_security_group_rule" "services_egress" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  ingress {
+    from_port       = lookup(var.services[element(keys(var.services), count.index)], "container_port")
+    to_port         = lookup(var.services[element(keys(var.services), count.index)], "container_port")
+    protocol        = "tcp"
+    security_groups = [aws_security_group.web.id]
+  }
 
-  type        = "egress"
-  from_port   = 0
-  to_port     = 0
-  protocol    = "-1"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = "${element(aws_security_group.services.*.id, count.index)}"
-}
-
-resource "aws_security_group_rule" "services_ingress" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
-
-  type                     = "ingress"
-  from_port                = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
-  to_port                  = "${lookup(var.services[element(keys(var.services), count.index)], "container_port")}"
-  protocol                 = "tcp"
-  source_security_group_id = "${aws_security_group.web.id}"
-
-  security_group_id = "${element(aws_security_group.services.*.id, count.index)}"
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
 # ALBs
@@ -253,15 +234,15 @@ resource "random_id" "target_group_sufix" {
 resource "aws_lb_target_group" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  name        = "${var.name}-${element(keys(var.services), count.index)}-${element(random_id.target_group_sufix.*.hex, count.index)}"
-  port        = element(random_id.target_group_sufix.*.keepers.container_port, count.index)
+  name        = "${var.name}-${element(keys(var.services), count.index)}-${element(random_id.target_group_sufix[*].hex, count.index)}"
+  port        = element(random_id.target_group_sufix[*].keepers.container_port, count.index)
   protocol    = "HTTP"
   vpc_id      = local.vpc_id
   target_type = "ip"
 
   health_check {
-    interval            = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_interval", var.alb_default_health_check_interval)}"
-    path                = "${lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)}"
+    interval            = lookup(var.services[element(keys(var.services), count.index)], "health_check_interval", var.alb_default_health_check_interval)
+    path                = lookup(var.services[element(keys(var.services), count.index)], "health_check_path", var.alb_default_health_check_path)
     healthy_threshold   = 3
     unhealthy_threshold = 3
     matcher             = "200-299"
@@ -283,7 +264,7 @@ resource "aws_lb" "this" {
 resource "aws_lb_listener" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  load_balancer_arn = element(aws_lb.this.*.arn, count.index)
+  load_balancer_arn = element(aws_lb.this[*].arn, count.index)
   port              = lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? 443 : 80
   protocol          = lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"
   ssl_policy        = lookup(var.services[element(keys(var.services), count.index)], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : ""
@@ -291,7 +272,7 @@ resource "aws_lb_listener" "this" {
   depends_on        = ["aws_lb_target_group.this"]
 
   default_action {
-    target_group_arn = element(aws_lb_target_group.this.*.arn, count.index)
+    target_group_arn = element(aws_lb_target_group.this[*].arn, count.index)
     type             = "forward"
   }
 }
@@ -301,9 +282,9 @@ resource "aws_lb_listener" "this" {
 resource "aws_ecs_service" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  name            = "${element(keys(var.services), count.index)}"
+  name            = element(keys(var.services), count.index)
   cluster         = aws_ecs_cluster.this.name
-  task_definition = "${element(aws_ecs_task_definition.this.*.family, count.index)}:${max("${element(aws_ecs_task_definition.this.*.revision, count.index)}", "${element(data.aws_ecs_task_definition.this.*.revision, count.index)}")}"
+  task_definition = "${element(aws_ecs_task_definition.this[*].family, count.index)}:${max("${element(aws_ecs_task_definition.this[*].revision, count.index)}", "${element(data.aws_ecs_task_definition.this[*].revision, count.index)}")}"
   desired_count   = lookup(var.services[element(keys(var.services), count.index)], "replicas")
   launch_type     = "FARGATE"
 
@@ -311,14 +292,14 @@ resource "aws_ecs_service" "this" {
   deployment_maximum_percent         = 200
 
   network_configuration {
-    security_groups = [element(aws_security_group.services.*.id, count.index)]
+    security_groups = [element(aws_security_group.services[*].id, count.index)]
 
     subnets          = var.vpc_create_nat ? local.vpc_private_subnets_ids : local.vpc_public_subnets_ids
     assign_public_ip = ! var.vpc_create_nat
   }
 
   load_balancer {
-    target_group_arn = element(aws_lb_target_group.this.*.arn, count.index)
+    target_group_arn = element(aws_lb_target_group.this[*].arn, count.index)
     container_name   = element(keys(var.services), count.index)
     container_port   = lookup(var.services[element(keys(var.services), count.index)], "container_port")
   }
@@ -332,22 +313,22 @@ resource "aws_ecs_service" "this" {
 
 resource "aws_iam_role" "autoscaling" {
   name               = "${var.name}-${terraform.workspace}-appautoscaling-role"
-  assume_role_policy = "${file("${path.module}/policies/appautoscaling-role.json")}"
+  assume_role_policy = file("${path.module}/policies/appautoscaling-role.json")
 }
 
 resource "aws_iam_role_policy" "autoscaling" {
   name   = "${var.name}-${terraform.workspace}-appautoscaling-policy"
-  policy = "${file("${path.module}/policies/appautoscaling-role-policy.json")}"
-  role   = "${aws_iam_role.autoscaling.id}"
+  policy = file("${path.module}/policies/appautoscaling-role-policy.json")
+  role   = aws_iam_role.autoscaling.id
 }
 
 resource "aws_appautoscaling_target" "this" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  count = length(var.services) > 0 ? length(var.services) : 0
 
-  max_capacity       = "${lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_replicas", lookup(var.services[element(keys(var.services), count.index)], "replicas"))}"
-  min_capacity       = "${lookup(var.services[element(keys(var.services), count.index)], "replicas")}"
+  max_capacity       = lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_replicas", lookup(var.services[element(keys(var.services), count.index)], "replicas"))
+  min_capacity       = lookup(var.services[element(keys(var.services), count.index)], "replicas")
   resource_id        = "service/${aws_ecs_cluster.this.name}/${element(keys(var.services), count.index)}"
-  role_arn           = "${aws_iam_role.autoscaling.arn}"
+  role_arn           = aws_iam_role.autoscaling.arn
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
@@ -355,16 +336,16 @@ resource "aws_appautoscaling_target" "this" {
 }
 
 resource "aws_appautoscaling_policy" "this" {
-  count = "${length(var.services) > 0 ? length(var.services) : 0}"
+  count = length(var.services) > 0 ? length(var.services) : 0
 
   name               = "${element(keys(var.services), count.index)}-autoscaling-policy"
   policy_type        = "TargetTrackingScaling"
-  resource_id        = "${element(aws_appautoscaling_target.this.*.resource_id, count.index)}"
-  scalable_dimension = "${element(aws_appautoscaling_target.this.*.scalable_dimension, count.index)}"
-  service_namespace  = "${element(aws_appautoscaling_target.this.*.service_namespace, count.index)}"
+  resource_id        = element(aws_appautoscaling_target.this[*].resource_id, count.index)
+  scalable_dimension = element(aws_appautoscaling_target.this[*].scalable_dimension, count.index)
+  service_namespace  = element(aws_appautoscaling_target.this[*].service_namespace, count.index)
 
   target_tracking_scaling_policy_configuration {
-    target_value = "${lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_cpu_util", 100)}"
+    target_value = lookup(var.services[element(keys(var.services), count.index)], "auto_scaling_max_cpu_util", 100)
 
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
@@ -436,7 +417,7 @@ resource "aws_codebuild_project" "this" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = element(data.template_file.buildspec.*.rendered, count.index)
+    buildspec = element(data.template_file.buildspec[*].rendered, count.index)
   }
 }
 
@@ -456,7 +437,7 @@ data "template_file" "codepipeline" {
 
   vars = {
     aws_s3_bucket_arn  = aws_s3_bucket.this.arn
-    ecr_repository_arn = element(aws_ecr_repository.this.*.arn, count.index)
+    ecr_repository_arn = element(aws_ecr_repository.this[*].arn, count.index)
   }
 }
 
@@ -464,15 +445,15 @@ resource "aws_iam_role_policy" "codepipeline" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
   name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline-role-policy"
-  role   = element(aws_iam_role.codepipeline.*.id, count.index)
-  policy = element(data.template_file.codepipeline.*.rendered, count.index)
+  role   = element(aws_iam_role.codepipeline[*].id, count.index)
+  policy = element(data.template_file.codepipeline[*].rendered, count.index)
 }
 
 resource "aws_codepipeline" "this" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
   name     = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-pipeline"
-  role_arn = element(aws_iam_role.codepipeline.*.arn, count.index)
+  role_arn = element(aws_iam_role.codepipeline[*].arn, count.index)
 
   artifact_store {
     location = aws_s3_bucket.this.bucket
@@ -491,7 +472,7 @@ resource "aws_codepipeline" "this" {
       output_artifacts = ["source"]
 
       configuration = {
-        RepositoryName = element(aws_ecr_repository.this.*.name, count.index)
+        RepositoryName = element(aws_ecr_repository.this[*].name, count.index)
         ImageTag       = "latest"
       }
     }
@@ -545,7 +526,7 @@ data "template_file" "codepipeline_events" {
   template = file("${path.module}/cloudwatch/codepipeline-source-event.json")
 
   vars = {
-    codepipeline_names = jsonencode(aws_codepipeline.this.*.name)
+    codepipeline_names = jsonencode(aws_codepipeline.this[*].name)
   }
 }
 
@@ -555,7 +536,7 @@ data "template_file" "codepipeline_events_sns" {
   template = file("${path.module}/policies/sns-cloudwatch-events-policy.json")
 
   vars = {
-    sns_arn = element(aws_sns_topic.codepipeline_events.*.arn, count.index)
+    sns_arn = element(aws_sns_topic.codepipeline_events[*].arn, count.index)
   }
 }
 
@@ -565,7 +546,7 @@ resource "aws_cloudwatch_event_rule" "codepipeline_events" {
   name        = "${var.name}-${terraform.workspace}-pipeline-events"
   description = "Amazon CloudWatch Events rule to automatically post SNS notifications when CodePipeline state changes."
 
-  event_pattern = element(data.template_file.codepipeline_events.*.rendered, count.index)
+  event_pattern = element(data.template_file.codepipeline_events[*].rendered, count.index)
 }
 
 resource "aws_sns_topic" "codepipeline_events" {
@@ -578,17 +559,17 @@ resource "aws_sns_topic" "codepipeline_events" {
 resource "aws_sns_topic_policy" "codepipeline_events" {
   count = var.codepipeline_events_enabled ? 1 : 0
 
-  arn = element(aws_sns_topic.codepipeline_events.*.arn, count.index)
+  arn = element(aws_sns_topic.codepipeline_events[*].arn, count.index)
 
-  policy = element(data.template_file.codepipeline_events_sns.*.rendered, count.index)
+  policy = element(data.template_file.codepipeline_events_sns[*].rendered, count.index)
 }
 
 resource "aws_cloudwatch_event_target" "codepipeline_events" {
   count = var.codepipeline_events_enabled ? 1 : 0
 
-  rule      = element(aws_cloudwatch_event_rule.codepipeline_events.*.name, count.index)
+  rule      = element(aws_cloudwatch_event_rule.codepipeline_events[*].name, count.index)
   target_id = "${var.name}-${terraform.workspace}-codepipeline"
-  arn       = element(aws_sns_topic.codepipeline_events.*.arn, count.index)
+  arn       = element(aws_sns_topic.codepipeline_events[*].arn, count.index)
 }
 
 ### CLOUDWATCH BASIC DASHBOARD
@@ -600,7 +581,7 @@ data "template_file" "metric_dashboard" {
 
   vars = {
     region         = var.region != "" ? var.region : data.aws_region.current.name
-    alb_arn_suffix = element(aws_lb.this.*.arn_suffix, count.index)
+    alb_arn_suffix = element(aws_lb.this[*].arn_suffix, count.index)
     cluster_name   = aws_ecs_cluster.this.name
     service_name   = element(keys(var.services), count.index)
   }
@@ -611,7 +592,7 @@ resource "aws_cloudwatch_dashboard" "this" {
 
   dashboard_name = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-metrics-dashboard"
 
-  dashboard_body = element(data.template_file.metric_dashboard.*.rendered, count.index)
+  dashboard_body = element(data.template_file.metric_dashboard[*].rendered, count.index)
 }
 
 ### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
@@ -630,7 +611,7 @@ data "template_file" "events" {
   template = file("${path.module}/policies/events-role-policy.json")
 
   vars = {
-    codepipeline_arn = element(aws_codepipeline.this.*.arn, count.index)
+    codepipeline_arn = element(aws_codepipeline.this[*].arn, count.index)
   }
 }
 
@@ -638,8 +619,8 @@ resource "aws_iam_role_policy" "events" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
   name   = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-events-role-policy"
-  role   = element(aws_iam_role.events.*.id, count.index)
-  policy = element(data.template_file.events.*.rendered, count.index)
+  role   = element(aws_iam_role.events[*].id, count.index)
+  policy = element(data.template_file.events[*].rendered, count.index)
 }
 
 data "template_file" "ecr_event" {
@@ -648,7 +629,7 @@ data "template_file" "ecr_event" {
   template = file("${path.module}/cloudwatch/ecr-source-event.json")
 
   vars = {
-    ecr_repository_name = element(aws_ecr_repository.this.*.name, count.index)
+    ecr_repository_name = element(aws_ecr_repository.this[*].name, count.index)
   }
 }
 
@@ -658,7 +639,7 @@ resource "aws_cloudwatch_event_rule" "events" {
   name        = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-ecr-event"
   description = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the Amazon ECR image tag."
 
-  event_pattern = element(data.template_file.ecr_event.*.rendered, count.index)
+  event_pattern = element(data.template_file.ecr_event[*].rendered, count.index)
 
   depends_on = ["aws_codepipeline.this"]
 }
@@ -666,11 +647,10 @@ resource "aws_cloudwatch_event_rule" "events" {
 resource "aws_cloudwatch_event_target" "events" {
   count = length(var.services) > 0 ? length(var.services) : 0
 
-  rule      = element(aws_cloudwatch_event_rule.events.*.name, count.index)
+  rule      = element(aws_cloudwatch_event_rule.events[*].name, count.index)
   target_id = "${var.name}-${terraform.workspace}-${element(keys(var.services), count.index)}-codepipeline"
-  arn       = element(aws_codepipeline.this.*.arn, count.index)
-  role_arn  = element(aws_iam_role.events.*.arn, count.index)
+  arn       = element(aws_codepipeline.this[*].arn, count.index)
+  role_arn  = element(aws_iam_role.events[*].arn, count.index)
 }
 
 ### End Remove
-

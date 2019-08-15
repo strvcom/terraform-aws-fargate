@@ -33,7 +33,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 - CloudWatch Logs group
 - CloudWatch Metrics Dashboard
 
-## Note: This module is compatible only with Terraform version >=12. Last TF 0.11.x compatible version is, well, module's version [0.11.3][0.11-compatible].
+## Note: This module is compatible only with Terraform version >=12. Last TF 0.11.x version compatible is, well, module's version [0.11.4][0.11-compatible].
 
 ![Diagram][diagram]
 
@@ -68,4 +68,4 @@ See the [LICENSE][license] file for information.
 [https-usage]: examples/https_enabled
 [autoscaling-usage]: examples/autoscaling
 [external-vpc-usage]: examples/external_vpc
-[0.11-compatible]: https://github.com/strvcom/terraform-aws-fargate/tree/0.11.3
+[0.11-compatible]: https://github.com/strvcom/terraform-aws-fargate/tree/0.11.4
