@@ -219,6 +219,35 @@ resource "aws_security_group" "services" {
   }
 }
 
+# Cross-service Security Groups
+resource "aws_security_group" "services_dynamic" {
+  count = length(var.services) > 0 ? length(var.services) : 0
+
+  vpc_id = local.vpc_id
+  name   = "${var.name}-${keys(var.services)[count.index]}-${terraform.workspace}-services-sg-dynamic"
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  dynamic "ingress" {
+    for_each = [for k, v in var.services : k
+      if k != keys(var.services)[count.index] &&
+    contains(lookup(var.services[keys(var.services)[count.index]], "allow_connections_from", []), k)]
+
+    content {
+      from_port = lookup(var.services[keys(var.services)[count.index]], "container_port")
+      to_port   = lookup(var.services[keys(var.services)[count.index]], "container_port")
+      protocol  = "tcp"
+      security_groups = [for s in aws_security_group.services : s.id
+      if lookup(s, "name", "") == "${var.name}-${ingress.value}-${terraform.workspace}-services-sg"]
+    }
+  }
+}
+
 # ALBs
 
 resource "random_id" "target_group_sufix" {
@@ -292,7 +321,10 @@ resource "aws_ecs_service" "this" {
   deployment_maximum_percent         = 200
 
   network_configuration {
-    security_groups = [element(aws_security_group.services[*].id, count.index)]
+    security_groups = [
+      aws_security_group.services[count.index].id, count.index,
+      aws_security_group.services_dynamic[count.index].id, count.index
+    ]
 
     subnets          = var.vpc_create_nat ? local.vpc_private_subnets_ids : local.vpc_public_subnets_ids
     assign_public_ip = ! var.vpc_create_nat
