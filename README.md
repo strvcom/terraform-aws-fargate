@@ -55,6 +55,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 - [HTTPS enabled][https-usage]
 - [AutoScaling][autoscaling-usage]
 - [External VPC][external-vpc-usage]
+- [Cross security groups between services][cross-sg-services]
 
 ## LICENSE
 
@@ -68,4 +69,5 @@ See the [LICENSE][license] file for information.
 [https-usage]: examples/https_enabled
 [autoscaling-usage]: examples/autoscaling
 [external-vpc-usage]: examples/external_vpc
+[cross-sg-services]: examples/cross-sg-services
 [0.11-compatible]: https://github.com/strvcom/terraform-aws-fargate/tree/0.11.4
