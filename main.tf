@@ -322,8 +322,8 @@ resource "aws_ecs_service" "this" {
 
   network_configuration {
     security_groups = [
-      aws_security_group.services[count.index].id, count.index,
-      aws_security_group.services_dynamic[count.index].id, count.index
+      aws_security_group.services[count.index].id,
+      aws_security_group.services_dynamic[count.index].id
     ]
 
     subnets          = var.vpc_create_nat ? local.vpc_private_subnets_ids : local.vpc_public_subnets_ids
