@@ -67,9 +67,7 @@ variable "ecr_default_retention_count" {
   default = 20
 }
 
-variable "services" {
-  type = "map"
-}
+variable "services" {}
 
 ## ALB variables
 
