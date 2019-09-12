@@ -22,7 +22,7 @@ module "fargate" {
       replicas        = 3
 
       auto_scaling_max_replicas     = 5  // Will scale out up to 5 replicas
-      auto_scaling_target_threshold = 60 // If Avg CPU Utilization reaches 60%, scale up operations gets triggered
+      auto_scaling_max_cpu_util = 60 // If Avg CPU Utilization reaches 60%, scale up operations gets triggered
     }
   }
 }
