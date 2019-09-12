@@ -147,7 +147,7 @@ resource "aws_ecs_task_definition" "this" {
   cpu                      = local.services[count.index].cpu
   memory                   = local.services[count.index].memory
   execution_role_arn       = aws_iam_role.tasks.arn
-  task_role_arn            = aws_iam_role.tasks.arn
+  task_role_arn            = lookup(local.services[count.index], "task_role_arn", null)
 }
 
 data "aws_ecs_task_definition" "this" {
