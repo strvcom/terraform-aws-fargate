@@ -90,6 +90,44 @@ module "fargate" {
 }
 ```
 
+And a very basic example of how an `api.json` file should look like
+
+```json
+[
+  {
+    "portMappings": [
+      {
+        "hostPort": ${container_port},
+        "protocol": "tcp",
+        "containerPort": ${container_port}
+      }
+    ],
+    "image": "${repository_url}:latest",
+    "name": "${container_name}",
+    "logConfiguration": {
+      "logDriver": "awslogs",
+      "options": {
+        "awslogs-group": "${log_group}",
+        "awslogs-region": "${region}",
+        "awslogs-stream-prefix": "ecs"
+      }
+    }
+  }
+]
+```
+
+### Template variables
+Notice that `hostPort`/`containerPort` gets populated by the `container_port` variable set on the module definition. This is to avoid repeating ourselves and keep one single source of truth.
+
+Other variables:
+
+- `repository_url` is the generated URL for the ECR registry for this specific service
+- `container_name` is exactly the name you gave to the service in the module definition.
+- `log_group` is a name generated during the module execution. If you have an already created log group you can put it here.
+- `region` is the chosen AWS region for the module execution
+
+> Note that the format of this `api.json` example is not made up by this module at all, this follows AWS Task definition (Container definition) format which you can check properly [here](https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task_definition_parameters.html#container_definitions)
+
 Here are the examples for different use cases 😊
 
 - [Basic][basic-usage]
