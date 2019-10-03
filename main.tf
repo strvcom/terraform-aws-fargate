@@ -156,6 +156,9 @@ data "aws_ecs_task_definition" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
   task_definition = element(aws_ecs_task_definition.this[*].family, count.index)
+
+  # This avoid fetching an unexisting task definition before its creation
+  depends_on = ["aws_ecs_task_definition.this"]
 }
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -341,11 +344,15 @@ resource "aws_service_discovery_service" "this" {
 resource "aws_ecs_service" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
-  name            = local.services[count.index].name
-  cluster         = aws_ecs_cluster.this.name
-  task_definition = "${aws_ecs_task_definition.this[count.index].family}:${max("${aws_ecs_task_definition.this[count.index].revision}", "${data.aws_ecs_task_definition.this[count.index].revision}")}"
-  desired_count   = local.services[count.index].replicas
-  launch_type     = "FARGATE"
+  name          = local.services[count.index].name
+  cluster       = aws_ecs_cluster.this.name
+  desired_count = local.services[count.index].replicas
+  launch_type   = "FARGATE"
+
+  task_definition = "${aws_ecs_task_definition.this[count.index].family}:${max(
+    aws_ecs_task_definition.this[count.index].revision,
+    length(data.aws_ecs_task_definition.this) >= count.index ? data.aws_ecs_task_definition.this[count.index].revision : 1
+  )}"
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
