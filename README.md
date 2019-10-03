@@ -81,6 +81,8 @@ module "fargate" {
       auto_scaling_max_cpu_util = 60 # Number, Optional: the avg CPU utilization needed to trigger a auto scaling operation
 
       allow_connections_from = ["api2"] # List[String], Optional: By default all services can only accept connections from their ALB. To explicitly allow connections from one service to another, use this label. This means that THIS service can be reached by service `api2`
+
+      service_discovery_enabled = true # Boolean, Optional: enables service discovery by creating a private Route53 zone. <service_name>.<cluster_name>.<terraform_workspace>.local
     }
 
     another_service = {
