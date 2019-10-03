@@ -49,7 +49,7 @@ locals {
   services_count = length(var.services)
 
   # ⚠️ remove when https://github.com/hashicorp/terraform/issues/22560 gets fixed
-  services_with_sd = [for s in local.services : s if lookup(s, "enable_service_discovery", false)]
+  services_with_sd = [for s in local.services : s if lookup(s, "service_discovery_enabled", false)]
 }
 
 data "aws_availability_zones" "this" {}
@@ -305,7 +305,7 @@ resource "aws_lb_listener" "this" {
 # SERVICE DISCOVERY
 
 resource "aws_service_discovery_private_dns_namespace" "this" {
-  count = length([for s in local.services : s if lookup(s, "enable_service_discovery", false)]) > 0 ? 1 : 0
+  count = length([for s in local.services : s if lookup(s, "service_discovery_enabled", false)]) > 0 ? 1 : 0
 
   name        = "${var.name}.${terraform.workspace}.local"
   description = "${var.name} private dns namespace"
@@ -314,7 +314,7 @@ resource "aws_service_discovery_private_dns_namespace" "this" {
 
 resource "aws_service_discovery_service" "this" {
   # ⚠️ replace when https://github.com/hashicorp/terraform/issues/22560 gets fixed
-  # for_each = [for s in local.services : s if lookup(s, "enable_service_discovery", false)]
+  # for_each = [for s in local.services : s if lookup(s, "service_discovery_enabled", false)]
   count = length(local.services_with_sd) > 0 ? length(local.services_with_sd) : 0
 
   # name = each.value.name
