@@ -69,6 +69,10 @@ variable "ecr_default_retention_count" {
 
 variable "services" {}
 
+variable "aws_ssm_allowed_parameters_arn" {
+  default = ""
+}
+
 ## ALB variables
 
 variable "alb_default_health_check_interval" {

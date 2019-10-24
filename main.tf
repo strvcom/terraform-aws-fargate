@@ -119,9 +119,38 @@ resource "aws_iam_role" "tasks" {
   assume_role_policy = file("${path.module}/policies/ecs-task-execution-role.json")
 }
 
+data "aws_iam_policy_document" "tasks" {
+  statement {
+    sid = "1"
+    actions = [
+      "ecr:GetAuthorizationToken",
+      "ecr:BatchCheckLayerAvailability",
+      "ecr:GetDownloadUrlForLayer",
+      "ecr:BatchGetImage",
+      "logs:CreateLogStream",
+      "logs:PutLogEvents"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "ssm:GetParameter*"
+    ]
+    resources = ["${var.aws_ssm_allowed_parameters_arn}"]
+  }
+
+  statement {
+    actions = [
+      "ssm:DescribeParameters",
+    ]
+    resources = ["*"]
+  }
+}
+
 resource "aws_iam_role_policy" "tasks" {
   name   = "${var.name}-${terraform.workspace}-task-execution-policy"
-  policy = file("${path.module}/policies/ecs-task-execution-role-policy.json")
+  policy = data.aws_iam_policy_document.tasks.json
   role   = aws_iam_role.tasks.id
 }
 
