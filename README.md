@@ -59,6 +59,8 @@ module "fargate" {
 
   codepipeline_events_enabled = true # Boolean, Optional: sns topic that exposes codepipeline events such as STARTED, FAILED, SUCCEEDED, CANCELED for new deployments. default = false.
 
+  ssm_allowed_parameters = "backend_*" # String, Optional: SSM parameter prefix. Allows the tasks to pull and use SSM parameters during task bootstrap. In case of requiring parameters from a different region, specify the full ARN string.
+
   services = { # Map, Required: the main object containing all information regarding fargate services
     name_of_your_service = { # Map, Required at least one: object containing specs of a specific Fargate service.
       task_definition = "api.json" # String, Required: string matching a valid ECS Task definition json file. This is a relative path ⚠️.
