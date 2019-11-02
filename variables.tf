@@ -69,6 +69,11 @@ variable "ecr_default_retention_count" {
 
 variable "services" {}
 
+variable "ssm_allowed_parameters" {
+  description = "List of ssm parameters that can be acceesed by the Fargate task during execution. Could be an ARN or just the name of the parameter path prefix"
+  default     = ""
+}
+
 ## ALB variables
 
 variable "alb_default_health_check_interval" {

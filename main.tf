@@ -56,6 +56,8 @@ data "aws_availability_zones" "this" {}
 
 data "aws_region" "current" {}
 
+data "aws_caller_identity" "current" {}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "2.9.0"
@@ -114,15 +116,45 @@ resource "aws_ecs_cluster" "this" {
 
 # ECS TASKS DEFINITIONS
 
-resource "aws_iam_role" "tasks" {
+resource "aws_iam_role" "tasks_execution" {
   name               = "${var.name}-${terraform.workspace}-task-execution-role"
   assume_role_policy = file("${path.module}/policies/ecs-task-execution-role.json")
 }
 
-resource "aws_iam_role_policy" "tasks" {
-  name   = "${var.name}-${terraform.workspace}-task-execution-policy"
+resource "aws_iam_policy" "tasks_execution" {
+  name = "${var.name}-${terraform.workspace}-task-execution-policy"
+
   policy = file("${path.module}/policies/ecs-task-execution-role-policy.json")
-  role   = aws_iam_role.tasks.id
+}
+
+resource "aws_iam_role_policy_attachment" "tasks_execution" {
+  role       = aws_iam_role.tasks_execution.name
+  policy_arn = aws_iam_policy.tasks_execution.arn
+}
+
+data "template_file" "tasks_execution_ssm" {
+  count = var.ssm_allowed_parameters != "" ? 1 : 0
+
+  template = file("${path.module}/policies/ecs-task-execution-role-policy-ssm.json")
+
+  vars = {
+    ssm_parameters_arn = replace(var.ssm_allowed_parameters, "arn:aws:ssm", "") == var.ssm_allowed_parameters ? "arn:aws:ssm:${data.aws_region.current.name}:${data.aws_caller_identity.current.account_id}:parameter${var.ssm_allowed_parameters}" : var.ssm_allowed_parameters
+  }
+}
+
+resource "aws_iam_policy" "tasks_execution_ssm" {
+  count = var.ssm_allowed_parameters != "" ? 1 : 0
+
+  name = "${var.name}-${terraform.workspace}-task-execution-ssm-policy"
+
+  policy = data.template_file.tasks_execution_ssm[count.index].rendered
+}
+
+resource "aws_iam_role_policy_attachment" "tasks_execution_ssm" {
+  count = var.ssm_allowed_parameters != "" ? 1 : 0
+
+  role       = aws_iam_role.tasks_execution.name
+  policy_arn = aws_iam_policy.tasks_execution_ssm[count.index].arn
 }
 
 data "template_file" "tasks" {
@@ -148,7 +180,7 @@ resource "aws_ecs_task_definition" "this" {
   network_mode             = "awsvpc"
   cpu                      = local.services[count.index].cpu
   memory                   = local.services[count.index].memory
-  execution_role_arn       = aws_iam_role.tasks.arn
+  execution_role_arn       = aws_iam_role.tasks_execution.arn
   task_role_arn            = lookup(local.services[count.index], "task_role_arn", null)
 }
 
