@@ -11,6 +11,11 @@ variable "region" {
   default     = ""
 }
 
+variable "service_discovery_enabled" {
+  default = false
+}
+
+
 ## VPC variables
 
 variable "vpc_create" {
@@ -55,17 +60,7 @@ variable "vpc_external_private_subnets_ids" {
   default     = []
 }
 
-## LOGS
-
-variable "cloudwatch_logs_default_retention_days" {
-  default = 30
-}
-
 ## ECS variables
-
-variable "ecr_default_retention_count" {
-  default = 20
-}
 
 variable "services" {}
 

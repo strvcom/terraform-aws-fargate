@@ -47,9 +47,6 @@ locals {
 
   services       = [for k, v in var.services : merge({ "name" : k }, v)]
   services_count = length(var.services)
-
-  # ⚠️ remove when https://github.com/hashicorp/terraform/issues/22560 gets fixed
-  services_with_sd = [for s in local.services : s if lookup(s, "service_discovery_enabled", false)]
 }
 
 data "aws_availability_zones" "this" {}
@@ -58,9 +55,15 @@ data "aws_region" "current" {}
 
 data "aws_caller_identity" "current" {}
 
+data "aws_ecr_repository" "this" {
+  count = local.services_count > 0 ? local.services_count : 0
+
+  name = local.services[count.index].ecr_repository_name
+}
+
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "2.9.0"
+  version = "2.18.0"
 
   create_vpc = var.vpc_create
 
@@ -80,32 +83,6 @@ module "vpc" {
 
   # Every instance will have a dedicated internal endpoint to communicate with S3
   enable_s3_endpoint = true
-}
-
-# ECR
-
-resource "aws_ecr_repository" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  name = "${local.services[count.index].name}-${terraform.workspace}"
-}
-
-data "template_file" "ecr-lifecycle" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  template = file("${path.module}/policies/ecr-lifecycle-policy.json")
-
-  vars = {
-    count = lookup(local.services[count.index], "registry_retention_count", var.ecr_default_retention_count)
-  }
-}
-
-resource "aws_ecr_lifecycle_policy" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  repository = aws_ecr_repository.this[count.index].name
-
-  policy = data.template_file.ecr-lifecycle[count.index].rendered
 }
 
 # ECS CLUSTER
@@ -157,25 +134,11 @@ resource "aws_iam_role_policy_attachment" "tasks_execution_ssm" {
   policy_arn = aws_iam_policy.tasks_execution_ssm[count.index].arn
 }
 
-data "template_file" "tasks" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  template = file("${path.cwd}/${local.services[count.index].task_definition}")
-
-  vars = {
-    container_name = local.services[count.index].name
-    container_port = local.services[count.index].container_port
-    repository_url = aws_ecr_repository.this[count.index].repository_url
-    log_group      = aws_cloudwatch_log_group.this[count.index].name
-    region         = var.region != "" ? var.region : data.aws_region.current.name
-  }
-}
-
 resource "aws_ecs_task_definition" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
   family                   = "${var.name}-${terraform.workspace}-${local.services[count.index].name}"
-  container_definitions    = data.template_file.tasks[count.index].rendered
+  container_definitions    = local.services[count.index].task_definition_json
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   cpu                      = local.services[count.index].cpu
@@ -187,18 +150,10 @@ resource "aws_ecs_task_definition" "this" {
 data "aws_ecs_task_definition" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
-  task_definition = element(aws_ecs_task_definition.this[*].family, count.index)
+  task_definition = aws_ecs_task_definition.this[count.index].family
 
   # This avoid fetching an unexisting task definition before its creation
-  depends_on = ["aws_ecs_task_definition.this"]
-}
-
-resource "aws_cloudwatch_log_group" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  name = "/ecs/${var.name}-${local.services[count.index].name}"
-
-  retention_in_days = lookup(local.services[count.index], "logs_retention_days", var.cloudwatch_logs_default_retention_days)
+  depends_on = [aws_ecs_task_definition.this]
 }
 
 # SECURITY GROUPS
@@ -329,7 +284,7 @@ resource "aws_lb_listener" "this" {
   protocol          = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"
   ssl_policy        = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : null
   certificate_arn   = lookup(local.services[count.index], "acm_certificate_arn", null)
-  depends_on        = ["aws_lb_target_group.this"]
+  depends_on        = [aws_lb_target_group.this]
 
   default_action {
     target_group_arn = aws_lb_target_group.this[count.index].arn
@@ -340,7 +295,7 @@ resource "aws_lb_listener" "this" {
 # SERVICE DISCOVERY
 
 resource "aws_service_discovery_private_dns_namespace" "this" {
-  count = length([for s in local.services : s if lookup(s, "service_discovery_enabled", false)]) > 0 ? 1 : 0
+  count = var.service_discovery_enabled ? 1 : 0
 
   name        = "${var.name}.${terraform.workspace}.local"
   description = "${var.name} private dns namespace"
@@ -348,12 +303,9 @@ resource "aws_service_discovery_private_dns_namespace" "this" {
 }
 
 resource "aws_service_discovery_service" "this" {
-  # ⚠️ replace when https://github.com/hashicorp/terraform/issues/22560 gets fixed
-  # for_each = [for s in local.services : s if lookup(s, "service_discovery_enabled", false)]
-  count = length(local.services_with_sd) > 0 ? length(local.services_with_sd) : 0
+  count = length(local.services) > 0 && var.service_discovery_enabled ? length(local.services) : 0
 
-  # name = each.value.name
-  name = local.services_with_sd[count.index].name
+  name = local.services[count.index].name
 
   dns_config {
     namespace_id = aws_service_discovery_private_dns_namespace.this[0].id
@@ -413,7 +365,7 @@ resource "aws_ecs_service" "this" {
     }
   }
 
-  depends_on = ["aws_lb_target_group.this", "aws_lb_listener.this"]
+  depends_on = [aws_lb_target_group.this, aws_lb_listener.this]
 
   lifecycle {
     ignore_changes = ["desired_count"]
@@ -441,7 +393,7 @@ resource "aws_appautoscaling_target" "this" {
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
-  depends_on = ["aws_ecs_service.this"]
+  depends_on = [aws_ecs_service.this]
 }
 
 resource "aws_appautoscaling_policy" "this" {
@@ -464,7 +416,7 @@ resource "aws_appautoscaling_policy" "this" {
     }
   }
 
-  depends_on = ["aws_appautoscaling_target.this"]
+  depends_on = [aws_appautoscaling_target.this]
 }
 
 # CODEBUILD
@@ -546,7 +498,7 @@ data "template_file" "codepipeline" {
 
   vars = {
     aws_s3_bucket_arn  = aws_s3_bucket.this.arn
-    ecr_repository_arn = aws_ecr_repository.this[count.index].arn
+    ecr_repository_arn = data.aws_ecr_repository.this[count.index].arn
   }
 }
 
@@ -581,7 +533,7 @@ resource "aws_codepipeline" "this" {
       output_artifacts = ["source"]
 
       configuration = {
-        RepositoryName = aws_ecr_repository.this[count.index].name
+        RepositoryName = data.aws_ecr_repository.this[count.index].name
         ImageTag       = "latest"
       }
     }
@@ -624,7 +576,7 @@ resource "aws_codepipeline" "this" {
     }
   }
 
-  depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
+  depends_on = [aws_iam_role_policy.codebuild, aws_ecs_service.this]
 }
 
 # CODEPIPELINE STATUS SNS
@@ -732,13 +684,14 @@ resource "aws_iam_role_policy" "events" {
   policy = data.template_file.events[count.index].rendered
 }
 
+# TODO: Optional. active_cd = true or something
 data "template_file" "ecr_event" {
   count = local.services_count > 0 ? local.services_count : 0
 
   template = file("${path.module}/cloudwatch/ecr-source-event.json")
 
   vars = {
-    ecr_repository_name = aws_ecr_repository.this[count.index].name
+    ecr_repository_name = data.aws_ecr_repository.this[count.index].name
   }
 }
 
@@ -750,7 +703,7 @@ resource "aws_cloudwatch_event_rule" "events" {
 
   event_pattern = data.template_file.ecr_event[count.index].rendered
 
-  depends_on = ["aws_codepipeline.this"]
+  depends_on = [aws_codepipeline.this]
 }
 
 resource "aws_cloudwatch_event_target" "events" {

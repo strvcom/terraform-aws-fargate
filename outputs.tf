@@ -32,18 +32,6 @@ output "private_subnets_cidr_blocks" {
   value       = module.vpc.private_subnets_cidr_blocks
 }
 
-# ECR
-
-output "ecr_repository_arns" {
-  description = "List of ARNs of ECR repositories"
-  value       = aws_ecr_repository.this.*.arn
-}
-
-output "ecr_repository_urls" {
-  description = "List of URLs of ECR repositories"
-  value       = aws_ecr_repository.this.*.repository_url
-}
-
 # ECS CLUSTER
 
 output "ecs_cluster_arn" {
@@ -88,18 +76,6 @@ output "services_security_groups_arns" {
 output "services_security_groups_ingress_rules" {
   description = "List of Ingress Rules of Services' Security Groups"
   value       = aws_security_group.services.*.ingress
-}
-
-# CLOUDWATCH LOG GROUPS
-
-output "cloudwatch_log_group_names" {
-  description = "List of Names of Cloudwatch Log Groups"
-  value       = aws_cloudwatch_log_group.this.*.name
-}
-
-output "cloudwatch_log_group_retention_days" {
-  description = "List of Retention in Days configuration of Cloudwatch Log Groups"
-  value       = aws_cloudwatch_log_group.this.*.retention_in_days
 }
 
 # CODEPIPELINE SNS EVENTS
