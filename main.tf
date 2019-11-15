@@ -190,7 +190,7 @@ data "aws_ecs_task_definition" "this" {
   task_definition = element(aws_ecs_task_definition.this[*].family, count.index)
 
   # This avoid fetching an unexisting task definition before its creation
-  depends_on = ["aws_ecs_task_definition.this"]
+  depends_on = [aws_ecs_task_definition.this]
 }
 
 resource "aws_cloudwatch_log_group" "this" {
@@ -329,7 +329,7 @@ resource "aws_lb_listener" "this" {
   protocol          = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"
   ssl_policy        = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : null
   certificate_arn   = lookup(local.services[count.index], "acm_certificate_arn", null)
-  depends_on        = ["aws_lb_target_group.this"]
+  depends_on        = [aws_lb_target_group.this]
 
   default_action {
     target_group_arn = aws_lb_target_group.this[count.index].arn
@@ -413,10 +413,10 @@ resource "aws_ecs_service" "this" {
     }
   }
 
-  depends_on = ["aws_lb_target_group.this", "aws_lb_listener.this"]
+  depends_on = [aws_lb_target_group.this, aws_lb_listener.this]
 
   lifecycle {
-    ignore_changes = ["desired_count"]
+    ignore_changes = [desired_count]
   }
 }
 
@@ -441,7 +441,7 @@ resource "aws_appautoscaling_target" "this" {
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
-  depends_on = ["aws_ecs_service.this"]
+  depends_on = [aws_ecs_service.this]
 }
 
 resource "aws_appautoscaling_policy" "this" {
@@ -464,7 +464,7 @@ resource "aws_appautoscaling_policy" "this" {
     }
   }
 
-  depends_on = ["aws_appautoscaling_target.this"]
+  depends_on = [aws_appautoscaling_target.this]
 }
 
 # CODEBUILD
@@ -624,7 +624,7 @@ resource "aws_codepipeline" "this" {
     }
   }
 
-  depends_on = ["aws_iam_role_policy.codebuild", "aws_ecs_service.this"]
+  depends_on = [aws_iam_role_policy.codebuild, aws_ecs_service.this]
 }
 
 # CODEPIPELINE STATUS SNS
@@ -704,8 +704,6 @@ resource "aws_cloudwatch_dashboard" "this" {
   dashboard_body = data.template_file.metric_dashboard[count.index].rendered
 }
 
-### Remove after ECR as CodePipeline Source gets fully integrated with AWS Provider
-
 resource "aws_iam_role" "events" {
   count = local.services_count > 0 ? local.services_count : 0
 
@@ -750,7 +748,7 @@ resource "aws_cloudwatch_event_rule" "events" {
 
   event_pattern = data.template_file.ecr_event[count.index].rendered
 
-  depends_on = ["aws_codepipeline.this"]
+  depends_on = [aws_codepipeline.this]
 }
 
 resource "aws_cloudwatch_event_target" "events" {
@@ -761,5 +759,3 @@ resource "aws_cloudwatch_event_target" "events" {
   arn       = aws_codepipeline.this[count.index].arn
   role_arn  = aws_iam_role.events[count.index].arn
 }
-
-### End Remove
