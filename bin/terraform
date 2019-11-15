@@ -13,4 +13,4 @@ exec docker run \
   --volume "$(cd .. && pwd)":/tmp/workspace/fargate-module \
   --env AWS_PROFILE="${AWS_PROFILE}" \
   --env AWS_DEFAULT_REGION="${AWS_DEFAULT_REGION}" \
-  hashicorp/terraform:0.12.8 "${@}"
+  hashicorp/terraform:0.12.15 "${@}"

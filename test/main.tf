@@ -14,7 +14,7 @@ module "fargate" {
 
   vpc_create_nat = false
 
-  name = "${var.name}"
+  name = var.name
 
   vpc_cidr = "10.1.0.0/16"
 

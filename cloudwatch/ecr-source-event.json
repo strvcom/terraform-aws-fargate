@@ -3,22 +3,17 @@
     "aws.ecr"
   ],
   "detail-type": [
-    "AWS API Call via CloudTrail"
+    "ECR Image Action"
   ],
   "detail": {
-    "eventSource": [
-      "ecr.amazonaws.com"
+    "action-type": [
+      "PUSH"
     ],
-    "eventName": [
-      "PutImage"
+    "image-tag": [
+      "latest"
     ],
-    "requestParameters": {
-      "repositoryName": [
-        "${ecr_repository_name}"
-      ],
-      "imageTag": [
-        "latest"
-      ]
-    }
+    "repository-name": [
+      "${ecr_repository_name}"
+    ]
   }
 }
