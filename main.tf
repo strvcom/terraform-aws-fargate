@@ -162,13 +162,13 @@ data "template_file" "tasks" {
 
   template = file("${path.cwd}/${local.services[count.index].task_definition}")
 
-  vars = {
+  vars = merge({
     container_name = local.services[count.index].name
     container_port = local.services[count.index].container_port
     repository_url = aws_ecr_repository.this[count.index].repository_url
     log_group      = aws_cloudwatch_log_group.this[count.index].name
     region         = var.region != "" ? var.region : data.aws_region.current.name
-  }
+  }, lookup(local.services[count.index], "task_definition_template_vars", {}))
 }
 
 resource "aws_ecs_task_definition" "this" {
