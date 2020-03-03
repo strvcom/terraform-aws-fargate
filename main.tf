@@ -283,9 +283,10 @@ resource "aws_lb_target_group" "this" {
 
 resource "aws_lb" "this" {
   count = local.services_count > 0 ? local.services_count : 0
+  internal        = lookup(local.services[count.index], "internal", false)
 
   name            = "${var.name}-${terraform.workspace}-${local.services[count.index].name}-alb"
-  subnets         = slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))
+  subnets         = lookup(local.services[count.index], "internal", false) ? slice(local.vpc_private_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_private_subnets_ids))) : slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))
   security_groups = [aws_security_group.web.id]
 }
 
