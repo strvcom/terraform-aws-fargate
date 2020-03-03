@@ -68,6 +68,7 @@ module "fargate" {
       cpu             = "256" # String, Required: CPU units used by the tasks
       memory          = "512" # String, Required: memory used by the tasks
       replicas        = 5 # Number, Required: amount of task replicas needed for the ecs service
+      internal        = false # Boolean, Optional: allows to specify that the service will live in a private subnet and use an internal load balancer
 
       registry_retention_count = 15 # Number, Optional: sets how many images does the ecr registry will retain before recycling old ones. default = 20
       logs_retention_days      = 14 # Number, Optional: sets how many days does the cloud watch log group will retain logs entries before deleting old ones. default = 30
