@@ -42,7 +42,7 @@ The goal of this effort is to provide tools/configuration files/scripts/other to
 ```HCL
 module "fargate" {
   source  = "strvcom/fargate/aws"
-  version = "0.17.1"
+  version = "0.17.0"
 
   name = "usage-example" # String, Required: this name will be used for many components of your infrastructure (vpc, loadbalancer, ecs cluster, etc...)
 
