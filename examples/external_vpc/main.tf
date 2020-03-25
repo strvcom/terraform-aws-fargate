@@ -1,9 +1,9 @@
 terraform {
-  required_version = ">= 0.11.13"
+  required_version = "~> 0.12"
 }
 
 provider "aws" {
-  version = "~> 2.6.0"
+  version = "~> 2.12.0"
   region  = "us-east-1"
   profile = "playground"
 }
@@ -18,7 +18,7 @@ variable "private_subnets_cidrs" {
 
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
-  version = "1.60.0"
+  version = "2.9.0"
 
   create_vpc = true
 
@@ -26,8 +26,8 @@ module "vpc" {
   cidr = "10.0.0.0/16"
   azs  = ["us-east-1a", "us-east-1b", "us-east-1c"]
 
-  public_subnets  = "${var.public_subnets_cidrs}"
-  private_subnets = "${var.private_subnets_cidrs}"
+  public_subnets  = var.public_subnets_cidrs
+  private_subnets = var.private_subnets_cidrs
 }
 
 module "fargate" {
@@ -35,14 +35,14 @@ module "fargate" {
 
   name = "external-vpc-example"
 
-  vpc_create      = false                  # This variable must be set to false, otherwise the module will create its own VPC
-  vpc_external_id = "${module.vpc.vpc_id}"
+  vpc_create      = false # This variable must be set to false, otherwise the module will create its own VPC
+  vpc_external_id = module.vpc.vpc_id
 
-  vpc_public_subnets  = "${var.public_subnets_cidrs}"
-  vpc_private_subnets = "${var.private_subnets_cidrs}"
+  vpc_public_subnets  = var.public_subnets_cidrs
+  vpc_private_subnets = var.private_subnets_cidrs
 
-  vpc_external_public_subnets_ids  = "${module.vpc.public_subnets}"
-  vpc_external_private_subnets_ids = "${module.vpc.private_subnets}"
+  vpc_external_public_subnets_ids  = module.vpc.public_subnets
+  vpc_external_private_subnets_ids = module.vpc.private_subnets
 
   services = {
     api = {

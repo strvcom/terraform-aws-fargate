@@ -1,9 +1,9 @@
 terraform {
-  required_version = "~> 0.11.11"
+  required_version = "~> 0.12"
 }
 
 provider "aws" {
-  version = "~> 1.54.0"
+  version = "~> 2.12.0"
   region  = "us-east-1"
   profile = "playground"
 }
