@@ -184,15 +184,6 @@ resource "aws_ecs_task_definition" "this" {
   task_role_arn            = lookup(local.services[count.index], "task_role_arn", null)
 }
 
-data "aws_ecs_task_definition" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
-
-  task_definition = element(aws_ecs_task_definition.this[*].family, count.index)
-
-  # This avoid fetching an unexisting task definition before its creation
-  depends_on = [aws_ecs_task_definition.this]
-}
-
 resource "aws_cloudwatch_log_group" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
@@ -381,10 +372,7 @@ resource "aws_ecs_service" "this" {
   desired_count = local.services[count.index].replicas
   launch_type   = "FARGATE"
 
-  task_definition = "${aws_ecs_task_definition.this[count.index].family}:${max(
-    aws_ecs_task_definition.this[count.index].revision,
-    length(data.aws_ecs_task_definition.this) >= count.index ? data.aws_ecs_task_definition.this[count.index].revision : 1
-  )}"
+  task_definition = aws_ecs_task_definition.this[count.index].arn
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
@@ -420,24 +408,12 @@ resource "aws_ecs_service" "this" {
   }
 }
 
-resource "aws_iam_role" "autoscaling" {
-  name               = "${var.name}-${terraform.workspace}-appautoscaling-role"
-  assume_role_policy = file("${path.module}/policies/appautoscaling-role.json")
-}
-
-resource "aws_iam_role_policy" "autoscaling" {
-  name   = "${var.name}-${terraform.workspace}-appautoscaling-policy"
-  policy = file("${path.module}/policies/appautoscaling-role-policy.json")
-  role   = aws_iam_role.autoscaling.id
-}
-
 resource "aws_appautoscaling_target" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
   max_capacity       = lookup(local.services[count.index], "auto_scaling_max_replicas", local.services[count.index].replicas)
   min_capacity       = local.services[count.index].replicas
   resource_id        = "service/${aws_ecs_cluster.this.name}/${local.services[count.index].name}"
-  role_arn           = aws_iam_role.autoscaling.arn
   scalable_dimension = "ecs:service:DesiredCount"
   service_namespace  = "ecs"
 
