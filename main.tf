@@ -372,10 +372,7 @@ resource "aws_ecs_service" "this" {
   desired_count = local.services[count.index].replicas
   launch_type   = "FARGATE"
 
-  task_definition = "${aws_ecs_task_definition.this[count.index].family}:${max(
-    aws_ecs_task_definition.this[count.index].revision,
-    length(aws_ecs_task_definition.this) >= count.index ? aws_ecs_task_definition.this[count.index].revision : 1
-  )}"
+  task_definition = aws_ecs_task_definition.this[count.index].arn
 
   deployment_minimum_healthy_percent = 100
   deployment_maximum_percent         = 200
