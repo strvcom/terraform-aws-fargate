@@ -265,6 +265,16 @@ resource "aws_security_group" "services_dynamic" {
   }
 
   dynamic "ingress" {
+    for_each = lookup(local.services[count.index], "ingress_ports", [])
+    content {
+      from_port       = ingress.value
+      to_port         = ingress.value
+      protocol        = "tcp"
+      security_groups = [aws_security_group.services[count.index].id]
+    }
+  }
+
+  dynamic "ingress" {
     for_each = [for k, v in var.services : k
       if k != local.services[count.index].name &&
     contains(lookup(local.services[count.index], "allow_connections_from", []), k)]
@@ -454,13 +464,14 @@ resource "aws_appautoscaling_policy" "this" {
   service_namespace  = aws_appautoscaling_target.this[count.index].service_namespace
 
   target_tracking_scaling_policy_configuration {
-    target_value = lookup(local.services[count.index], "auto_scaling_max_cpu_util", 100)
+    target_value = lookup(local.services[count.index], "auto_scaling_target_value", 100)
 
     scale_in_cooldown  = 300
     scale_out_cooldown = 300
 
     predefined_metric_specification {
-      predefined_metric_type = "ECSServiceAverageCPUUtilization"
+      predefined_metric_type = lookup(local.services[count.index], "auto_scaling_metric_type", "ECSServiceAverageCPUUtilization")
+      resource_label = "${aws_lb.this[count.index].arn_suffix}/${aws_lb_target_group.this[count.index].arn_suffix}"
     }
   }
 
