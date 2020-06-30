@@ -68,6 +68,11 @@ output "application_load_balancers_dns_names" {
   value       = aws_lb.this.*.dns_name
 }
 
+output "application_load_balancers_listeners_arns" {
+  description = "List of ARNs of Application Load Balancer Listeners"
+  value       = aws_lb_listener.this.*.arn
+}
+
 # SECURITY GROUPS
 
 output "web_security_group_arn" {
