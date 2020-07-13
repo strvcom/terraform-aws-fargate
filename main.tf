@@ -163,6 +163,7 @@ data "template_file" "tasks" {
   template = file("${path.cwd}/${local.services[count.index].task_definition}")
 
   vars = {
+    workspace      = terraform.workspace
     container_name = local.services[count.index].name
     container_port = local.services[count.index].container_port
     repository_url = aws_ecr_repository.this[count.index].repository_url
