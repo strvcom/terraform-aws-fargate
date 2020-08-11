@@ -87,7 +87,7 @@ module "vpc" {
 resource "aws_ecr_repository" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
-  name = local.services[count.index].ecr_repository_name != null ? "${local.services[count.index].ecr_repository_name}" : "${local.services[count.index].name}-${terraform.workspace}"
+  name = "${local.services[count.index].name}-${terraform.workspace}"
 }
 
 data "template_file" "ecr-lifecycle" {
@@ -162,15 +162,17 @@ data "template_file" "tasks" {
 
   template = file("${path.cwd}/${local.services[count.index].task_definition}")
 
-  vars = {
-    workspace      = terraform.workspace
-    task_vars      = local.services[count.index].task_vars
-    container_name = local.services[count.index].name
-    container_port = local.services[count.index].container_port
-    repository_url = aws_ecr_repository.this[count.index].repository_url
-    log_group      = aws_cloudwatch_log_group.this[count.index].name
-    region         = var.region != "" ? var.region : data.aws_region.current.name
-  }
+  vars = merge(
+    {
+      workspace      = terraform.workspace
+      container_name = local.services[count.index].name
+      container_port = local.services[count.index].container_port
+      repository_url = aws_ecr_repository.this[count.index].repository_url
+      log_group      = aws_cloudwatch_log_group.this[count.index].name
+      region         = var.region != "" ? var.region : data.aws_region.current.name
+    },
+    { for k, v in local.services[count.index].task_vars : "task_var_${k}" => v}
+  )
 }
 
 resource "aws_ecs_task_definition" "this" {
