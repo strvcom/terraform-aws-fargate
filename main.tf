@@ -164,6 +164,7 @@ data "template_file" "tasks" {
 
   vars = {
     workspace      = terraform.workspace
+    task_vars      = local.services[count.index].task_vars
     container_name = local.services[count.index].name
     container_port = local.services[count.index].container_port
     repository_url = aws_ecr_repository.this[count.index].repository_url
