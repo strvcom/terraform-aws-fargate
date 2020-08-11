@@ -87,7 +87,7 @@ module "vpc" {
 resource "aws_ecr_repository" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
-  name = "${local.services[count.index].name}-${terraform.workspace}"
+  name = local.services[count.index].ecr_repository_name != null ? "${local.services[count.index].ecr_repository_name}" : "${local.services[count.index].name}-${terraform.workspace}"
 }
 
 data "template_file" "ecr-lifecycle" {
