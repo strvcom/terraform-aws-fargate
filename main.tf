@@ -162,13 +162,17 @@ data "template_file" "tasks" {
 
   template = file("${path.cwd}/${local.services[count.index].task_definition}")
 
-  vars = {
-    container_name = local.services[count.index].name
-    container_port = local.services[count.index].container_port
-    repository_url = aws_ecr_repository.this[count.index].repository_url
-    log_group      = aws_cloudwatch_log_group.this[count.index].name
-    region         = var.region != "" ? var.region : data.aws_region.current.name
-  }
+  vars = merge(
+    {
+      workspace      = terraform.workspace
+      container_name = local.services[count.index].name
+      container_port = local.services[count.index].container_port
+      repository_url = aws_ecr_repository.this[count.index].repository_url
+      log_group      = aws_cloudwatch_log_group.this[count.index].name
+      region         = var.region != "" ? var.region : data.aws_region.current.name
+    },
+    { for k, v in local.services[count.index].task_vars : "task_var_${k}" => v}
+  )
 }
 
 resource "aws_ecs_task_definition" "this" {
@@ -196,7 +200,7 @@ data "aws_ecs_task_definition" "this" {
 resource "aws_cloudwatch_log_group" "this" {
   count = local.services_count > 0 ? local.services_count : 0
 
-  name = "/ecs/${var.name}-${local.services[count.index].name}"
+  name = "/ecs/${var.name}-${terraform.workspace}-${local.services[count.index].name}"
 
   retention_in_days = lookup(local.services[count.index], "logs_retention_days", var.cloudwatch_logs_default_retention_days)
 }
