@@ -292,17 +292,21 @@ resource "random_id" "target_group_sufix" {
 }
 
 resource "aws_lb_target_group" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
+  for_each = {
+    for key, value in local.services :
+    key => key
+    if lookup(value, "alb_create", true)
+  }
 
-  name        = "${var.name}-${local.services[count.index].name}-${random_id.target_group_sufix[count.index].hex}"
-  port        = random_id.target_group_sufix[count.index].keepers.container_port
+  name        = "${var.name}-${local.services[each.key].name}-${random_id.target_group_sufix[each.key].hex}"
+  port        = random_id.target_group_sufix[each.key].keepers.container_port
   protocol    = "HTTP"
   vpc_id      = local.vpc_id
   target_type = "ip"
 
   health_check {
-    interval            = lookup(local.services[count.index], "health_check_interval", var.alb_default_health_check_interval)
-    path                = lookup(local.services[count.index], "health_check_path", var.alb_default_health_check_path)
+    interval            = lookup(local.services[each.key], "health_check_interval", var.alb_default_health_check_interval)
+    path                = lookup(local.services[each.key], "health_check_path", var.alb_default_health_check_path)
     healthy_threshold   = 3
     unhealthy_threshold = 3
     matcher             = "200-299"
@@ -314,25 +318,29 @@ resource "aws_lb_target_group" "this" {
 }
 
 resource "aws_lb" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
+  for_each = {
+    for key, value in local.services :
+    key => key
+    if lookup(value, "alb_create", true)
+  }
 
-  name            = "${var.name}-${terraform.workspace}-${local.services[count.index].name}-alb"
+  name            = "${var.name}-${terraform.workspace}-${local.services[each.key].name}-alb"
   subnets         = slice(local.vpc_public_subnets_ids, 0, min(length(data.aws_availability_zones.this.names), length(local.vpc_public_subnets_ids)))
   security_groups = [aws_security_group.web.id]
 }
 
 resource "aws_lb_listener" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
+  for_each = aws_lb.this
 
-  load_balancer_arn = aws_lb.this[count.index].arn
-  port              = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? 443 : 80
-  protocol          = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"
-  ssl_policy        = lookup(local.services[count.index], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : null
-  certificate_arn   = lookup(local.services[count.index], "acm_certificate_arn", null)
+  load_balancer_arn = aws_lb.this[each.key].arn
+  port              = lookup(local.services[each.key], "acm_certificate_arn", "") != "" ? 443 : 80
+  protocol          = lookup(local.services[each.key], "acm_certificate_arn", "") != "" ? "HTTPS" : "HTTP"
+  ssl_policy        = lookup(local.services[each.key], "acm_certificate_arn", "") != "" ? "ELBSecurityPolicy-FS-2018-06" : null
+  certificate_arn   = lookup(local.services[each.key], "acm_certificate_arn", null)
   depends_on        = [aws_lb_target_group.this]
 
   default_action {
-    target_group_arn = aws_lb_target_group.this[count.index].arn
+    target_group_arn = aws_lb_target_group.this[each.key].arn
     type             = "forward"
   }
 }
@@ -399,10 +407,13 @@ resource "aws_ecs_service" "this" {
     assign_public_ip = ! var.vpc_create_nat
   }
 
-  load_balancer {
-    target_group_arn = aws_lb_target_group.this[count.index].arn
-    container_name   = local.services[count.index].name
-    container_port   = local.services[count.index].container_port
+  dynamic load_balancer {
+    for_each = lookup(local.services[count.index], "alb_create", true) ? [1] : []
+    content {
+      target_group_arn = aws_lb_target_group.this[count.index].arn
+      container_name   = local.services[count.index].name
+      container_port   = local.services[count.index].container_port
+    }
   }
 
   dynamic "service_registries" {
@@ -684,24 +695,48 @@ resource "aws_cloudwatch_event_target" "codepipeline_events" {
 ### CLOUDWATCH BASIC DASHBOARD
 
 data "template_file" "metric_dashboard" {
-  count = local.services_count > 0 ? local.services_count : 0
+  for_each = aws_lb.this
 
   template = file("${path.module}/metrics/basic-dashboard.json")
 
   vars = {
     region         = var.region != "" ? var.region : data.aws_region.current.name
-    alb_arn_suffix = aws_lb.this[count.index].arn_suffix
+    alb_arn_suffix = aws_lb.this[each.key].arn_suffix
     cluster_name   = aws_ecs_cluster.this.name
-    service_name   = local.services[count.index].name
+    service_name   = local.services[each.key].name
   }
 }
 
 resource "aws_cloudwatch_dashboard" "this" {
-  count = local.services_count > 0 ? local.services_count : 0
+  for_each = data.template_file.metric_dashboard
 
-  dashboard_name = "${var.name}-${terraform.workspace}-${local.services[count.index].name}-metrics-dashboard"
+  dashboard_name = "${var.name}-${terraform.workspace}-${local.services[each.key].name}-metrics-dashboard"
 
-  dashboard_body = data.template_file.metric_dashboard[count.index].rendered
+  dashboard_body = data.template_file.metric_dashboard[each.key].rendered
+}
+
+data "template_file" "metric_dashboard_no_alb" {
+  for_each = {
+    for key, value in local.services :
+    key => key
+    if ! lookup(value, "alb_create", true)
+  }
+
+  template = file("${path.module}/metrics/basic-dashboard-no-alb.json")
+
+  vars = {
+    region       = var.region != "" ? var.region : data.aws_region.current.name
+    cluster_name = aws_ecs_cluster.this.name
+    service_name = local.services[each.key].name
+  }
+}
+
+resource "aws_cloudwatch_dashboard" "this_no_alb" {
+  for_each = data.template_file.metric_dashboard_no_alb
+
+  dashboard_name = "${var.name}-${terraform.workspace}-${local.services[each.key].name}-metrics-dashboard"
+
+  dashboard_body = data.template_file.metric_dashboard_no_alb[each.key].rendered
 }
 
 resource "aws_iam_role" "events" {

@@ -1,0 +1,1495 @@
+[0m[1mRefreshing Terraform state in-memory prior to plan...[0m
+The refreshed state will be used to calculate this plan, but will not be
+persisted to local or remote state storage.
+[0m
+[0m[1mmodule.fargate.data.template_file.buildspec[0]: Refreshing state...[0m
+[0m[1mmodule.fargate.data.template_file.ecr-lifecycle[0]: Refreshing state...[0m
+[0m[1mmodule.fargate.data.aws_region.current: Refreshing state...[0m
+[0m[1mmodule.fargate.data.aws_availability_zones.this: Refreshing state...[0m
+[0m[1mmodule.fargate.module.vpc.data.aws_vpc_endpoint_service.s3[0]: Refreshing state...[0m
+[0m[1mmodule.fargate.data.aws_caller_identity.current: Refreshing state...[0m
+
+------------------------------------------------------------------------
+
+An execution plan has been generated and is shown below.
+Resource actions are indicated with the following symbols:
+  [32m+[0m create
+ [36m<=[0m read (data resources)
+[0m
+Terraform will perform the following actions:
+
+[1m  # module.fargate.data.aws_ecs_task_definition.this[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "aws_ecs_task_definition" "this"  {
+      [32m+[0m [0m[1m[0mfamily[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_mode[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mrevision[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mstatus[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mtask_definition[0m[0m = "basic-example-default-api"
+      [32m+[0m [0m[1m[0mtask_role_arn[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.data.template_file.codebuild[0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "codebuild"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mrendered[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"logs:CreateLogGroup",
+                          [32m+[0m [0m"logs:CreateLogStream",
+                          [32m+[0m [0m"logs:PutLogEvents",
+                          [32m+[0m [0m"ecr:GetAuthorizationToken",
+                          [32m+[0m [0m"ecr:InitiateLayerUpload",
+                          [32m+[0m [0m"ecr:UploadLayerPart",
+                          [32m+[0m [0m"ecr:CompleteLayerUpload",
+                          [32m+[0m [0m"ecr:BatchCheckLayerAvailability",
+                          [32m+[0m [0m"ecr:PutImage",
+                          [32m+[0m [0m"ecs:RunTask",
+                          [32m+[0m [0m"iam:PassRole",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"*",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"s3:GetObject",
+                          [32m+[0m [0m"s3:GetObjectVersion",
+                          [32m+[0m [0m"s3:GetBucketVersioning",
+                          [32m+[0m [0m"s3:List*",
+                          [32m+[0m [0m"s3:PutObject",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"${aws_s3_bucket_arn}",
+                          [32m+[0m [0m"${aws_s3_bucket_arn}/*",
+                        ]
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"aws_s3_bucket_arn" = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.data.template_file.codepipeline[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "codepipeline"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mrendered[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"s3:GetObject",
+                          [32m+[0m [0m"s3:GetObjectVersion",
+                          [32m+[0m [0m"s3:GetBucketVersioning",
+                          [32m+[0m [0m"s3:List*",
+                          [32m+[0m [0m"s3:PutObject",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"${aws_s3_bucket_arn}",
+                          [32m+[0m [0m"${aws_s3_bucket_arn}/*",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"codebuild:BatchGetBuilds",
+                          [32m+[0m [0m"codebuild:StartBuild",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = "*"
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"ecr:DescribeImages",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"${ecr_repository_arn}",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"ecs:*",
+                          [32m+[0m [0m"events:DescribeRule",
+                          [32m+[0m [0m"events:DeleteRule",
+                          [32m+[0m [0m"events:ListRuleNamesByTarget",
+                          [32m+[0m [0m"events:ListTargetsByRule",
+                          [32m+[0m [0m"events:PutRule",
+                          [32m+[0m [0m"events:PutTargets",
+                          [32m+[0m [0m"events:RemoveTargets",
+                          [32m+[0m [0m"iam:ListAttachedRolePolicies",
+                          [32m+[0m [0m"iam:ListInstanceProfiles",
+                          [32m+[0m [0m"iam:ListRoles",
+                          [32m+[0m [0m"logs:CreateLogGroup",
+                          [32m+[0m [0m"logs:DescribeLogGroups",
+                          [32m+[0m [0m"logs:FilterLogEvents",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = "*"
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "iam:PassRole"
+                      [32m+[0m [0mCondition = {
+                          [32m+[0m [0mStringLike = {
+                              [32m+[0m [0miam:PassedToService = "ecs-tasks.amazonaws.com"
+                            }
+                        }
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mResource  = [
+                          [32m+[0m [0m"*",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "iam:PassRole"
+                      [32m+[0m [0mCondition = {
+                          [32m+[0m [0mStringLike = {
+                              [32m+[0m [0miam:PassedToService = [
+                                  [32m+[0m [0m"ec2.amazonaws.com",
+                                  [32m+[0m [0m"ec2.amazonaws.com.cn",
+                                ]
+                            }
+                        }
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mResource  = [
+                          [32m+[0m [0m"arn:aws:iam::*:role/ecsInstanceRole*",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "iam:PassRole"
+                      [32m+[0m [0mCondition = {
+                          [32m+[0m [0mStringLike = {
+                              [32m+[0m [0miam:PassedToService = [
+                                  [32m+[0m [0m"application-autoscaling.amazonaws.com",
+                                  [32m+[0m [0m"application-autoscaling.amazonaws.com.cn",
+                                ]
+                            }
+                        }
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mResource  = [
+                          [32m+[0m [0m"arn:aws:iam::*:role/ecsAutoscaleRole*",
+                        ]
+                    },
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "iam:CreateServiceLinkedRole"
+                      [32m+[0m [0mCondition = {
+                          [32m+[0m [0mStringLike = {
+                              [32m+[0m [0miam:AWSServiceName = [
+                                  [32m+[0m [0m"ecs.amazonaws.com",
+                                  [32m+[0m [0m"spot.amazonaws.com",
+                                  [32m+[0m [0m"spotfleet.amazonaws.com",
+                                ]
+                            }
+                        }
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mResource  = "*"
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"aws_s3_bucket_arn"  = (known after apply)
+          [32m+[0m [0m"ecr_repository_arn" = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.data.template_file.codepipeline_events[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "codepipeline_events"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = "efd8a8aa6cd92d99c40e3f4037c5f9bf412704dd18f8ce616050bbb2ecd99d3e"
+      [32m+[0m [0m[1m[0mrendered[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mdetail      = {
+                  [32m+[0m [0mpipeline = [
+                      [32m+[0m [0m"basic-example-default-api-pipeline",
+                    ]
+                  [32m+[0m [0mstate    = [
+                      [32m+[0m [0m"STARTED",
+                      [32m+[0m [0m"FAILED",
+                      [32m+[0m [0m"SUCCEEDED",
+                      [32m+[0m [0m"CANCELED",
+                    ]
+                }
+              [32m+[0m [0mdetail-type = [
+                  [32m+[0m [0m"CodePipeline Pipeline Execution State Change",
+                ]
+              [32m+[0m [0msource      = [
+                  [32m+[0m [0m"aws.codepipeline",
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = <<~EOT
+            {
+              "source": [
+                "aws.codepipeline"
+              ],
+              "detail-type": [
+                "CodePipeline Pipeline Execution State Change"
+              ],
+              "detail": {
+                "state": [
+                  "STARTED",
+                  "FAILED",
+                  "SUCCEEDED",
+                  "CANCELED"
+                ],
+                "pipeline": ${codepipeline_names}
+              }
+            }
+        EOT
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"codepipeline_names" = jsonencode(
+                [
+                  [32m+[0m [0m"basic-example-default-api-pipeline",
+                ]
+            )
+        }
+    }
+
+[1m  # module.fargate.data.template_file.codepipeline_events_sns[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "codepipeline_events_sns"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mrendered[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sns:Publish"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "events.amazonaws.com"
+                        }
+                      [32m+[0m [0mResource  = "${sns_arn}"
+                      [32m+[0m [0mSid       = "TrustCWEToPublishEventsToMyTopic"
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"sns_arn" = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.data.template_file.ecr_event[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "ecr_event"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = "a22e4d5a45c90ea02e22e0c227d7d815b4681b78058111531ddef4d6ce15d182"
+      [32m+[0m [0m[1m[0mrendered[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mdetail      = {
+                  [32m+[0m [0maction-type     = [
+                      [32m+[0m [0m"PUSH",
+                    ]
+                  [32m+[0m [0mimage-tag       = [
+                      [32m+[0m [0m"latest",
+                    ]
+                  [32m+[0m [0mrepository-name = [
+                      [32m+[0m [0m"api-default",
+                    ]
+                }
+              [32m+[0m [0mdetail-type = [
+                  [32m+[0m [0m"ECR Image Action",
+                ]
+              [32m+[0m [0msource      = [
+                  [32m+[0m [0m"aws.ecr",
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mdetail      = {
+                  [32m+[0m [0maction-type     = [
+                      [32m+[0m [0m"PUSH",
+                    ]
+                  [32m+[0m [0mimage-tag       = [
+                      [32m+[0m [0m"latest",
+                    ]
+                  [32m+[0m [0mrepository-name = [
+                      [32m+[0m [0m"${ecr_repository_name}",
+                    ]
+                }
+              [32m+[0m [0mdetail-type = [
+                  [32m+[0m [0m"ECR Image Action",
+                ]
+              [32m+[0m [0msource      = [
+                  [32m+[0m [0m"aws.ecr",
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"ecr_repository_name" = "api-default"
+        }
+    }
+
+[1m  # module.fargate.data.template_file.events[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "events"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mrendered[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"codepipeline:StartPipelineExecution",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"${codepipeline_arn}",
+                        ]
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"codepipeline_arn" = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.data.template_file.tasks[0][0m will be read during apply
+  # (config refers to values not yet known)[0m[0m
+[0m [36m<=[0m[0m data "template_file" "tasks"  {
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mrendered[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtemplate[0m[0m = <<~EOT
+            [
+              {
+                "portMappings": [
+                  {
+                    "hostPort": ${container_port},
+                    "protocol": "tcp",
+                    "containerPort": ${container_port}
+                  }
+                ],
+                "image": "${repository_url}:latest",
+                "name": "${container_name}",
+                "logConfiguration": {
+                  "logDriver": "awslogs",
+                  "options": {
+                    "awslogs-group": "${log_group}",
+                    "awslogs-region": "${region}",
+                    "awslogs-stream-prefix": "ecs"
+                  }
+                }
+              }
+            ]
+        EOT
+      [32m+[0m [0m[1m[0mvars[0m[0m     = {
+          [32m+[0m [0m"container_name" = "api"
+          [32m+[0m [0m"container_port" = "3000"
+          [32m+[0m [0m"log_group"      = "/ecs/basic-example-api"
+          [32m+[0m [0m"region"         = "eu-west-1"
+          [32m+[0m [0m"repository_url" = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.aws_appautoscaling_policy.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_appautoscaling_policy" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                 = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m               = "api-autoscaling-policy"
+      [32m+[0m [0m[1m[0mpolicy_type[0m[0m        = "TargetTrackingScaling"
+      [32m+[0m [0m[1m[0mresource_id[0m[0m        = "service/basic-example-default-cluster/api"
+      [32m+[0m [0m[1m[0mscalable_dimension[0m[0m = "ecs:service:DesiredCount"
+      [32m+[0m [0m[1m[0mservice_namespace[0m[0m  = "ecs"
+
+      [32m+[0m [0mtarget_tracking_scaling_policy_configuration {
+          [32m+[0m [0m[1m[0mdisable_scale_in[0m[0m   = false
+          [32m+[0m [0m[1m[0mscale_in_cooldown[0m[0m  = 300
+          [32m+[0m [0m[1m[0mscale_out_cooldown[0m[0m = 300
+          [32m+[0m [0m[1m[0mtarget_value[0m[0m       = 100
+
+          [32m+[0m [0mpredefined_metric_specification {
+              [32m+[0m [0m[1m[0mpredefined_metric_type[0m[0m = "ECSServiceAverageCPUUtilization"
+            }
+        }
+    }
+
+[1m  # module.fargate.aws_appautoscaling_target.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_appautoscaling_target" "this" {
+      [32m+[0m [0m[1m[0mid[0m[0m                 = (known after apply)
+      [32m+[0m [0m[1m[0mmax_capacity[0m[0m       = 3
+      [32m+[0m [0m[1m[0mmin_capacity[0m[0m       = 3
+      [32m+[0m [0m[1m[0mresource_id[0m[0m        = "service/basic-example-default-cluster/api"
+      [32m+[0m [0m[1m[0mrole_arn[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mscalable_dimension[0m[0m = "ecs:service:DesiredCount"
+      [32m+[0m [0m[1m[0mservice_namespace[0m[0m  = "ecs"
+    }
+
+[1m  # module.fargate.aws_cloudwatch_event_rule.codepipeline_events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_rule" "codepipeline_events" {
+      [32m+[0m [0m[1m[0marn[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mdescription[0m[0m   = "Amazon CloudWatch Events rule to automatically post SNS notifications when CodePipeline state changes."
+      [32m+[0m [0m[1m[0mevent_pattern[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mdetail      = {
+                  [32m+[0m [0mpipeline = [
+                      [32m+[0m [0m"basic-example-default-api-pipeline",
+                    ]
+                  [32m+[0m [0mstate    = [
+                      [32m+[0m [0m"STARTED",
+                      [32m+[0m [0m"FAILED",
+                      [32m+[0m [0m"SUCCEEDED",
+                      [32m+[0m [0m"CANCELED",
+                    ]
+                }
+              [32m+[0m [0mdetail-type = [
+                  [32m+[0m [0m"CodePipeline Pipeline Execution State Change",
+                ]
+              [32m+[0m [0msource      = [
+                  [32m+[0m [0m"aws.codepipeline",
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mid[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mis_enabled[0m[0m    = true
+      [32m+[0m [0m[1m[0mname[0m[0m          = "basic-example-default-pipeline-events"
+    }
+
+[1m  # module.fargate.aws_cloudwatch_event_rule.events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_rule" "events" {
+      [32m+[0m [0m[1m[0marn[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mdescription[0m[0m   = "Amazon CloudWatch Events rule to automatically start your pipeline when a change occurs in the Amazon ECR image tag."
+      [32m+[0m [0m[1m[0mevent_pattern[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mdetail      = {
+                  [32m+[0m [0maction-type     = [
+                      [32m+[0m [0m"PUSH",
+                    ]
+                  [32m+[0m [0mimage-tag       = [
+                      [32m+[0m [0m"latest",
+                    ]
+                  [32m+[0m [0mrepository-name = [
+                      [32m+[0m [0m"api-default",
+                    ]
+                }
+              [32m+[0m [0mdetail-type = [
+                  [32m+[0m [0m"ECR Image Action",
+                ]
+              [32m+[0m [0msource      = [
+                  [32m+[0m [0m"aws.ecr",
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mid[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mis_enabled[0m[0m    = true
+      [32m+[0m [0m[1m[0mname[0m[0m          = "basic-example-default-api-ecr-event"
+    }
+
+[1m  # module.fargate.aws_cloudwatch_event_target.codepipeline_events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_target" "codepipeline_events" {
+      [32m+[0m [0m[1m[0marn[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mrule[0m[0m      = "basic-example-default-pipeline-events"
+      [32m+[0m [0m[1m[0mtarget_id[0m[0m = "basic-example-default-codepipeline"
+    }
+
+[1m  # module.fargate.aws_cloudwatch_event_target.events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_cloudwatch_event_target" "events" {
+      [32m+[0m [0m[1m[0marn[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mrole_arn[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mrule[0m[0m      = "basic-example-default-api-ecr-event"
+      [32m+[0m [0m[1m[0mtarget_id[0m[0m = "basic-example-default-api-codepipeline"
+    }
+
+[1m  # module.fargate.aws_cloudwatch_log_group.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_cloudwatch_log_group" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m              = "/ecs/basic-example-api"
+      [32m+[0m [0m[1m[0mretention_in_days[0m[0m = 14
+    }
+
+[1m  # module.fargate.aws_codebuild_project.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_codebuild_project" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mbadge_enabled[0m[0m  = false
+      [32m+[0m [0m[1m[0mbadge_url[0m[0m      = (known after apply)
+      [32m+[0m [0m[1m[0mbuild_timeout[0m[0m  = 10
+      [32m+[0m [0m[1m[0mdescription[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mencryption_key[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m           = "basic-example-default-api-builds"
+      [32m+[0m [0m[1m[0mqueued_timeout[0m[0m = 480
+      [32m+[0m [0m[1m[0mservice_role[0m[0m   = (known after apply)
+
+      [32m+[0m [0martifacts {
+          [32m+[0m [0m[1m[0mencryption_disabled[0m[0m    = false
+          [32m+[0m [0m[1m[0moverride_artifact_name[0m[0m = false
+          [32m+[0m [0m[1m[0mtype[0m[0m                   = "CODEPIPELINE"
+        }
+
+      [32m+[0m [0menvironment {
+          [32m+[0m [0m[1m[0mcompute_type[0m[0m                = "BUILD_GENERAL1_SMALL"
+          [32m+[0m [0m[1m[0mimage[0m[0m                       = "aws/codebuild/ubuntu-base:14.04"
+          [32m+[0m [0m[1m[0mimage_pull_credentials_type[0m[0m = "CODEBUILD"
+          [32m+[0m [0m[1m[0mprivileged_mode[0m[0m             = true
+          [32m+[0m [0m[1m[0mtype[0m[0m                        = "LINUX_CONTAINER"
+        }
+
+      [32m+[0m [0msource {
+          [32m+[0m [0m[1m[0mbuildspec[0m[0m = <<~EOT
+                version: 0.2
+                
+                phases:
+                  pre_build:
+                    commands:
+                      - apt-get update && apt-get install jq -y
+                  post_build:
+                    commands:
+                      - REPOSITORY_URI=$(cat imageDetail.json | jq .ImageURI)
+                      - printf '[{"name":"api","imageUri":%s}]' $REPOSITORY_URI > imagedefinitions.json
+                artifacts:
+                  files: imagedefinitions.json
+            EOT
+          [32m+[0m [0m[1m[0mtype[0m[0m      = "CODEPIPELINE"
+        }
+    }
+
+[1m  # module.fargate.aws_codepipeline.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_codepipeline" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m      = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m     = "basic-example-default-api-pipeline"
+      [32m+[0m [0m[1m[0mrole_arn[0m[0m = (known after apply)
+
+      [32m+[0m [0martifact_store {
+          [32m+[0m [0m[1m[0mlocation[0m[0m = "basic-example-default-builds"
+          [32m+[0m [0m[1m[0mregion[0m[0m   = (known after apply)
+          [32m+[0m [0m[1m[0mtype[0m[0m     = "S3"
+        }
+
+      [32m+[0m [0mstage {
+          [32m+[0m [0m[1m[0mname[0m[0m = "Source"
+
+          [32m+[0m [0maction {
+              [32m+[0m [0m[1m[0mcategory[0m[0m         = "Source"
+              [32m+[0m [0m[1m[0mconfiguration[0m[0m    = {
+                  [32m+[0m [0m"ImageTag"       = "latest"
+                  [32m+[0m [0m"RepositoryName" = "api-default"
+                }
+              [32m+[0m [0m[1m[0mname[0m[0m             = "Source"
+              [32m+[0m [0m[1m[0moutput_artifacts[0m[0m = [
+                  [32m+[0m [0m"source",
+                ]
+              [32m+[0m [0m[1m[0mowner[0m[0m            = "AWS"
+              [32m+[0m [0m[1m[0mprovider[0m[0m         = "ECR"
+              [32m+[0m [0m[1m[0mregion[0m[0m           = (known after apply)
+              [32m+[0m [0m[1m[0mrun_order[0m[0m        = (known after apply)
+              [32m+[0m [0m[1m[0mversion[0m[0m          = "1"
+            }
+        }
+      [32m+[0m [0mstage {
+          [32m+[0m [0m[1m[0mname[0m[0m = "Build"
+
+          [32m+[0m [0maction {
+              [32m+[0m [0m[1m[0mcategory[0m[0m         = "Build"
+              [32m+[0m [0m[1m[0mconfiguration[0m[0m    = {
+                  [32m+[0m [0m"ProjectName" = "basic-example-default-api-builds"
+                }
+              [32m+[0m [0m[1m[0minput_artifacts[0m[0m  = [
+                  [32m+[0m [0m"source",
+                ]
+              [32m+[0m [0m[1m[0mname[0m[0m             = "Build"
+              [32m+[0m [0m[1m[0moutput_artifacts[0m[0m = [
+                  [32m+[0m [0m"imagedefinitions",
+                ]
+              [32m+[0m [0m[1m[0mowner[0m[0m            = "AWS"
+              [32m+[0m [0m[1m[0mprovider[0m[0m         = "CodeBuild"
+              [32m+[0m [0m[1m[0mregion[0m[0m           = (known after apply)
+              [32m+[0m [0m[1m[0mrun_order[0m[0m        = (known after apply)
+              [32m+[0m [0m[1m[0mversion[0m[0m          = "1"
+            }
+        }
+      [32m+[0m [0mstage {
+          [32m+[0m [0m[1m[0mname[0m[0m = "Deploy"
+
+          [32m+[0m [0maction {
+              [32m+[0m [0m[1m[0mcategory[0m[0m        = "Deploy"
+              [32m+[0m [0m[1m[0mconfiguration[0m[0m   = {
+                  [32m+[0m [0m"ClusterName" = "basic-example-default-cluster"
+                  [32m+[0m [0m"FileName"    = "imagedefinitions.json"
+                  [32m+[0m [0m"ServiceName" = "api"
+                }
+              [32m+[0m [0m[1m[0minput_artifacts[0m[0m = [
+                  [32m+[0m [0m"imagedefinitions",
+                ]
+              [32m+[0m [0m[1m[0mname[0m[0m            = "Deploy"
+              [32m+[0m [0m[1m[0mowner[0m[0m           = "AWS"
+              [32m+[0m [0m[1m[0mprovider[0m[0m        = "ECS"
+              [32m+[0m [0m[1m[0mregion[0m[0m          = (known after apply)
+              [32m+[0m [0m[1m[0mrun_order[0m[0m       = (known after apply)
+              [32m+[0m [0m[1m[0mversion[0m[0m         = "1"
+            }
+        }
+    }
+
+[1m  # module.fargate.aws_ecr_lifecycle_policy.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_ecr_lifecycle_policy" "this" {
+      [32m+[0m [0m[1m[0mid[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mpolicy[0m[0m      = jsonencode(
+            {
+              [32m+[0m [0mrules = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0maction       = {
+                          [32m+[0m [0mtype = "expire"
+                        }
+                      [32m+[0m [0mdescription  = "Expire outdated tagged images"
+                      [32m+[0m [0mrulePriority = 1
+                      [32m+[0m [0mselection    = {
+                          [32m+[0m [0mcountNumber = 15
+                          [32m+[0m [0mcountType   = "imageCountMoreThan"
+                          [32m+[0m [0mtagStatus   = "any"
+                        }
+                    },
+                ]
+            }
+        )
+      [32m+[0m [0m[1m[0mregistry_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mrepository[0m[0m  = "api-default"
+    }
+
+[1m  # module.fargate.aws_ecr_repository.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_ecr_repository" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m                  = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0mimage_tag_mutability[0m[0m = "MUTABLE"
+      [32m+[0m [0m[1m[0mname[0m[0m                 = "api-default"
+      [32m+[0m [0m[1m[0mregistry_id[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mrepository_url[0m[0m       = (known after apply)
+    }
+
+[1m  # module.fargate.aws_ecs_cluster.this[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_ecs_cluster" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m   = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m = "basic-example-default-cluster"
+
+      [32m+[0m [0msetting {
+          [32m+[0m [0m[1m[0mname[0m[0m  = (known after apply)
+          [32m+[0m [0m[1m[0mvalue[0m[0m = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.aws_ecs_service.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_ecs_service" "this" {
+      [32m+[0m [0m[1m[0mcluster[0m[0m                            = "basic-example-default-cluster"
+      [32m+[0m [0m[1m[0mdeployment_maximum_percent[0m[0m         = 200
+      [32m+[0m [0m[1m[0mdeployment_minimum_healthy_percent[0m[0m = 100
+      [32m+[0m [0m[1m[0mdesired_count[0m[0m                      = 3
+      [32m+[0m [0m[1m[0menable_ecs_managed_tags[0m[0m            = false
+      [32m+[0m [0m[1m[0miam_role[0m[0m                           = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                                 = (known after apply)
+      [32m+[0m [0m[1m[0mlaunch_type[0m[0m                        = "FARGATE"
+      [32m+[0m [0m[1m[0mname[0m[0m                               = "api"
+      [32m+[0m [0m[1m[0mplatform_version[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0mscheduling_strategy[0m[0m                = "REPLICA"
+      [32m+[0m [0m[1m[0mtask_definition[0m[0m                    = (known after apply)
+
+      [32m+[0m [0mload_balancer {
+          [32m+[0m [0m[1m[0mcontainer_name[0m[0m   = "api"
+          [32m+[0m [0m[1m[0mcontainer_port[0m[0m   = 3000
+          [32m+[0m [0m[1m[0mtarget_group_arn[0m[0m = (known after apply)
+        }
+
+      [32m+[0m [0mnetwork_configuration {
+          [32m+[0m [0m[1m[0massign_public_ip[0m[0m = false
+          [32m+[0m [0m[1m[0msecurity_groups[0m[0m  = (known after apply)
+          [32m+[0m [0m[1m[0msubnets[0m[0m          = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.aws_ecs_task_definition.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_ecs_task_definition" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m                      = (known after apply)
+      [32m+[0m [0m[1m[0mcontainer_definitions[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mcpu[0m[0m                      = "256"
+      [32m+[0m [0m[1m[0mexecution_role_arn[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mfamily[0m[0m                   = "basic-example-default-api"
+      [32m+[0m [0m[1m[0mid[0m[0m                       = (known after apply)
+      [32m+[0m [0m[1m[0mmemory[0m[0m                   = "512"
+      [32m+[0m [0m[1m[0mnetwork_mode[0m[0m             = "awsvpc"
+      [32m+[0m [0m[1m[0mrequires_compatibilities[0m[0m = [
+          [32m+[0m [0m"FARGATE",
+        ]
+      [32m+[0m [0m[1m[0mrevision[0m[0m                 = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_policy.tasks_execution[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_policy" "tasks_execution" {
+      [32m+[0m [0m[1m[0marn[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m   = "basic-example-default-task-execution-policy"
+      [32m+[0m [0m[1m[0mpath[0m[0m   = "/"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"ecr:GetAuthorizationToken",
+                          [32m+[0m [0m"ecr:BatchCheckLayerAvailability",
+                          [32m+[0m [0m"ecr:GetDownloadUrlForLayer",
+                          [32m+[0m [0m"ecr:BatchGetImage",
+                          [32m+[0m [0m"logs:CreateLogStream",
+                          [32m+[0m [0m"logs:PutLogEvents",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = "*"
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+    }
+
+[1m  # module.fargate.aws_iam_role.autoscaling[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role" "autoscaling" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0massume_role_policy[0m[0m    = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sts:AssumeRole"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "ecs.application-autoscaling.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mcreate_date[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mforce_detach_policies[0m[0m = false
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mmax_session_duration[0m[0m  = 3600
+      [32m+[0m [0m[1m[0mname[0m[0m                  = "basic-example-default-appautoscaling-role"
+      [32m+[0m [0m[1m[0mpath[0m[0m                  = "/"
+      [32m+[0m [0m[1m[0munique_id[0m[0m             = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role.codebuild[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role" "codebuild" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0massume_role_policy[0m[0m    = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sts:AssumeRole"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "codebuild.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mcreate_date[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mforce_detach_policies[0m[0m = false
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mmax_session_duration[0m[0m  = 3600
+      [32m+[0m [0m[1m[0mname[0m[0m                  = "basic-example-default-codebuild-role"
+      [32m+[0m [0m[1m[0mpath[0m[0m                  = "/"
+      [32m+[0m [0m[1m[0munique_id[0m[0m             = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role.codepipeline[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role" "codepipeline" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0massume_role_policy[0m[0m    = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sts:AssumeRole"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "codepipeline.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mcreate_date[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mforce_detach_policies[0m[0m = false
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mmax_session_duration[0m[0m  = 3600
+      [32m+[0m [0m[1m[0mname[0m[0m                  = "basic-example-default-api-codepipeline-role"
+      [32m+[0m [0m[1m[0mpath[0m[0m                  = "/"
+      [32m+[0m [0m[1m[0munique_id[0m[0m             = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role.events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role" "events" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0massume_role_policy[0m[0m    = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sts:AssumeRole"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "events.amazonaws.com"
+                        }
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mcreate_date[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mforce_detach_policies[0m[0m = false
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mmax_session_duration[0m[0m  = 3600
+      [32m+[0m [0m[1m[0mname[0m[0m                  = "basic-example-default-api-events-role"
+      [32m+[0m [0m[1m[0mpath[0m[0m                  = "/"
+      [32m+[0m [0m[1m[0munique_id[0m[0m             = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role.tasks_execution[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role" "tasks_execution" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0massume_role_policy[0m[0m    = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction    = "sts:AssumeRole"
+                      [32m+[0m [0mEffect    = "Allow"
+                      [32m+[0m [0mPrincipal = {
+                          [32m+[0m [0mService = "ecs-tasks.amazonaws.com"
+                        }
+                      [32m+[0m [0mSid       = ""
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mcreate_date[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mforce_detach_policies[0m[0m = false
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mmax_session_duration[0m[0m  = 3600
+      [32m+[0m [0m[1m[0mname[0m[0m                  = "basic-example-default-task-execution-role"
+      [32m+[0m [0m[1m[0mpath[0m[0m                  = "/"
+      [32m+[0m [0m[1m[0munique_id[0m[0m             = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role_policy.autoscaling[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "autoscaling" {
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m   = "basic-example-default-appautoscaling-policy"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = jsonencode(
+            {
+              [32m+[0m [0mStatement = [
+                  [32m+[0m [0m{
+                      [32m+[0m [0mAction   = [
+                          [32m+[0m [0m"ecs:DescribeServices",
+                          [32m+[0m [0m"ecs:UpdateService",
+                          [32m+[0m [0m"cloudwatch:PutMetricAlarm",
+                          [32m+[0m [0m"cloudwatch:DescribeAlarms",
+                          [32m+[0m [0m"cloudwatch:DeleteAlarms",
+                        ]
+                      [32m+[0m [0mEffect   = "Allow"
+                      [32m+[0m [0mResource = [
+                          [32m+[0m [0m"*",
+                        ]
+                    },
+                ]
+              [32m+[0m [0mVersion   = "2012-10-17"
+            }
+        )
+      [32m+[0m [0m[1m[0mrole[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role_policy.codebuild[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "codebuild" {
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m   = "basic-example-default-codebuild-role-policy"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mrole[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role_policy.codepipeline[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "codepipeline" {
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m   = "basic-example-default-api-codepipeline-role-policy"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mrole[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role_policy.events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role_policy" "events" {
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m   = "basic-example-default-api-events-role-policy"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mrole[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.aws_iam_role_policy_attachment.tasks_execution[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_iam_role_policy_attachment" "tasks_execution" {
+      [32m+[0m [0m[1m[0mid[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mpolicy_arn[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mrole[0m[0m       = "basic-example-default-task-execution-role"
+    }
+
+[1m  # module.fargate.aws_lb_target_group.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_lb_target_group" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m                                = (known after apply)
+      [32m+[0m [0m[1m[0marn_suffix[0m[0m                         = (known after apply)
+      [32m+[0m [0m[1m[0mderegistration_delay[0m[0m               = 300
+      [32m+[0m [0m[1m[0mid[0m[0m                                 = (known after apply)
+      [32m+[0m [0m[1m[0mlambda_multi_value_headers_enabled[0m[0m = false
+      [32m+[0m [0m[1m[0mload_balancing_algorithm_type[0m[0m      = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m                               = (known after apply)
+      [32m+[0m [0m[1m[0mport[0m[0m                               = 3000
+      [32m+[0m [0m[1m[0mprotocol[0m[0m                           = "HTTP"
+      [32m+[0m [0m[1m[0mproxy_protocol_v2[0m[0m                  = false
+      [32m+[0m [0m[1m[0mslow_start[0m[0m                         = 0
+      [32m+[0m [0m[1m[0mtarget_type[0m[0m                        = "ip"
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                             = (known after apply)
+
+      [32m+[0m [0mhealth_check {
+          [32m+[0m [0m[1m[0menabled[0m[0m             = true
+          [32m+[0m [0m[1m[0mhealthy_threshold[0m[0m   = 3
+          [32m+[0m [0m[1m[0minterval[0m[0m            = 100
+          [32m+[0m [0m[1m[0mmatcher[0m[0m             = "200-299"
+          [32m+[0m [0m[1m[0mpath[0m[0m                = "/health-check"
+          [32m+[0m [0m[1m[0mport[0m[0m                = "traffic-port"
+          [32m+[0m [0m[1m[0mprotocol[0m[0m            = "HTTP"
+          [32m+[0m [0m[1m[0mtimeout[0m[0m             = (known after apply)
+          [32m+[0m [0m[1m[0munhealthy_threshold[0m[0m = 3
+        }
+
+      [32m+[0m [0mstickiness {
+          [32m+[0m [0m[1m[0mcookie_duration[0m[0m = (known after apply)
+          [32m+[0m [0m[1m[0menabled[0m[0m         = (known after apply)
+          [32m+[0m [0m[1m[0mtype[0m[0m            = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.aws_s3_bucket.this[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_s3_bucket" "this" {
+      [32m+[0m [0m[1m[0macceleration_status[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0macl[0m[0m                         = "private"
+      [32m+[0m [0m[1m[0marn[0m[0m                         = (known after apply)
+      [32m+[0m [0m[1m[0mbucket[0m[0m                      = "basic-example-default-builds"
+      [32m+[0m [0m[1m[0mbucket_domain_name[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mbucket_regional_domain_name[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mforce_destroy[0m[0m               = true
+      [32m+[0m [0m[1m[0mhosted_zone_id[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                          = (known after apply)
+      [32m+[0m [0m[1m[0mregion[0m[0m                      = (known after apply)
+      [32m+[0m [0m[1m[0mrequest_payer[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mwebsite_domain[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mwebsite_endpoint[0m[0m            = (known after apply)
+
+      [32m+[0m [0mversioning {
+          [32m+[0m [0m[1m[0menabled[0m[0m    = (known after apply)
+          [32m+[0m [0m[1m[0mmfa_delete[0m[0m = (known after apply)
+        }
+    }
+
+[1m  # module.fargate.aws_security_group.services[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_security_group" "services" {
+      [32m+[0m [0m[1m[0marn[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mdescription[0m[0m            = "Managed by Terraform"
+      [32m+[0m [0m[1m[0megress[0m[0m                 = [
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = [
+                  [32m+[0m [0m"0.0.0.0/0",
+                ]
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 0
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "-1"
+              [32m+[0m [0msecurity_groups  = []
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 0
+            },
+        ]
+      [32m+[0m [0m[1m[0mid[0m[0m                     = (known after apply)
+      [32m+[0m [0m[1m[0mingress[0m[0m                = [
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = []
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 3000
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "tcp"
+              [32m+[0m [0msecurity_groups  = (known after apply)
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 3000
+            },
+        ]
+      [32m+[0m [0m[1m[0mname[0m[0m                   = "basic-example-api-default-services-sg"
+      [32m+[0m [0m[1m[0mowner_id[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mrevoke_rules_on_delete[0m[0m = false
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                 = (known after apply)
+    }
+
+[1m  # module.fargate.aws_security_group.services_dynamic[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_security_group" "services_dynamic" {
+      [32m+[0m [0m[1m[0marn[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mdescription[0m[0m            = "Managed by Terraform"
+      [32m+[0m [0m[1m[0megress[0m[0m                 = [
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = [
+                  [32m+[0m [0m"0.0.0.0/0",
+                ]
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 0
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "-1"
+              [32m+[0m [0msecurity_groups  = []
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 0
+            },
+        ]
+      [32m+[0m [0m[1m[0mid[0m[0m                     = (known after apply)
+      [32m+[0m [0m[1m[0mingress[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m                   = "basic-example-api-default-services-sg-dynamic"
+      [32m+[0m [0m[1m[0mowner_id[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mrevoke_rules_on_delete[0m[0m = false
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                 = (known after apply)
+    }
+
+[1m  # module.fargate.aws_security_group.web[0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_security_group" "web" {
+      [32m+[0m [0m[1m[0marn[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mdescription[0m[0m            = "Managed by Terraform"
+      [32m+[0m [0m[1m[0megress[0m[0m                 = [
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = [
+                  [32m+[0m [0m"0.0.0.0/0",
+                ]
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 0
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "-1"
+              [32m+[0m [0msecurity_groups  = []
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 0
+            },
+        ]
+      [32m+[0m [0m[1m[0mid[0m[0m                     = (known after apply)
+      [32m+[0m [0m[1m[0mingress[0m[0m                = [
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = [
+                  [32m+[0m [0m"0.0.0.0/0",
+                ]
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 443
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "tcp"
+              [32m+[0m [0msecurity_groups  = []
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 443
+            },
+          [32m+[0m [0m{
+              [32m+[0m [0mcidr_blocks      = [
+                  [32m+[0m [0m"0.0.0.0/0",
+                ]
+              [32m+[0m [0mdescription      = ""
+              [32m+[0m [0mfrom_port        = 80
+              [32m+[0m [0mipv6_cidr_blocks = []
+              [32m+[0m [0mprefix_list_ids  = []
+              [32m+[0m [0mprotocol         = "tcp"
+              [32m+[0m [0msecurity_groups  = []
+              [32m+[0m [0mself             = false
+              [32m+[0m [0mto_port          = 80
+            },
+        ]
+      [32m+[0m [0m[1m[0mname[0m[0m                   = "basic-example-default-web-sg"
+      [32m+[0m [0m[1m[0mowner_id[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mrevoke_rules_on_delete[0m[0m = false
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                 = (known after apply)
+    }
+
+[1m  # module.fargate.aws_sns_topic.codepipeline_events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_sns_topic" "codepipeline_events" {
+      [32m+[0m [0m[1m[0marn[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mdisplay_name[0m[0m = "basic-example-default-codepipeline-events"
+      [32m+[0m [0m[1m[0mid[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mname[0m[0m         = "basic-example-default-codepipeline-events"
+      [32m+[0m [0m[1m[0mpolicy[0m[0m       = (known after apply)
+    }
+
+[1m  # module.fargate.aws_sns_topic_policy.codepipeline_events[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_sns_topic_policy" "codepipeline_events" {
+      [32m+[0m [0m[1m[0marn[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mpolicy[0m[0m = (known after apply)
+    }
+
+[1m  # module.fargate.random_id.target_group_sufix[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "random_id" "target_group_sufix" {
+      [32m+[0m [0m[1m[0mb64[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mb64_std[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mb64_url[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mbyte_length[0m[0m = 2
+      [32m+[0m [0m[1m[0mdec[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mhex[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mkeepers[0m[0m     = {
+          [32m+[0m [0m"container_port" = "3000"
+        }
+    }
+
+[1m  # module.fargate.module.vpc.aws_eip.nat[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_eip" "nat" {
+      [32m+[0m [0m[1m[0mallocation_id[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0massociation_id[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mcustomer_owned_ip[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mdomain[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0minstance[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_interface[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mprivate_dns[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mprivate_ip[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mpublic_dns[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mpublic_ip[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mpublic_ipv4_pool[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m              = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-eu-west-1a"
+        }
+      [32m+[0m [0m[1m[0mvpc[0m[0m               = true
+    }
+
+[1m  # module.fargate.module.vpc.aws_internet_gateway.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_internet_gateway" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m      = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0mowner_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m     = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m   = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_nat_gateway.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_nat_gateway" "this" {
+      [32m+[0m [0m[1m[0mallocation_id[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_interface_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mprivate_ip[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mpublic_ip[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                 = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-eu-west-1a"
+        }
+    }
+
+[1m  # module.fargate.module.vpc.aws_route.private_nat_gateway[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route" "private_nat_gateway" {
+      [32m+[0m [0m[1m[0mdestination_cidr_block[0m[0m     = "0.0.0.0/0"
+      [32m+[0m [0m[1m[0mdestination_prefix_list_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0megress_only_gateway_id[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mgateway_id[0m[0m                 = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                         = (known after apply)
+      [32m+[0m [0m[1m[0minstance_id[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0minstance_owner_id[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mlocal_gateway_id[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mnat_gateway_id[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_interface_id[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0morigin[0m[0m                     = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mstate[0m[0m                      = (known after apply)
+
+      [32m+[0m [0mtimeouts {
+          [32m+[0m [0m[1m[0mcreate[0m[0m = "5m"
+        }
+    }
+
+[1m  # module.fargate.module.vpc.aws_route.public_internet_gateway[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route" "public_internet_gateway" {
+      [32m+[0m [0m[1m[0mdestination_cidr_block[0m[0m     = "0.0.0.0/0"
+      [32m+[0m [0m[1m[0mdestination_prefix_list_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0megress_only_gateway_id[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mgateway_id[0m[0m                 = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                         = (known after apply)
+      [32m+[0m [0m[1m[0minstance_id[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0minstance_owner_id[0m[0m          = (known after apply)
+      [32m+[0m [0m[1m[0mlocal_gateway_id[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mnat_gateway_id[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_interface_id[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0morigin[0m[0m                     = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mstate[0m[0m                      = (known after apply)
+
+      [32m+[0m [0mtimeouts {
+          [32m+[0m [0m[1m[0mcreate[0m[0m = "5m"
+        }
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table.private[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table" "private" {
+      [32m+[0m [0m[1m[0mid[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mowner_id[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mpropagating_vgws[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mroute[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m             = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-private"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m           = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table.public[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table" "public" {
+      [32m+[0m [0m[1m[0mid[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0mowner_id[0m[0m         = (known after apply)
+      [32m+[0m [0m[1m[0mpropagating_vgws[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mroute[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m             = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-public"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m           = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.private[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "private" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.private[1][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "private" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.private[2][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "private" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.public[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.public[1][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_route_table_association.public[2][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_route_table_association" "public" {
+      [32m+[0m [0m[1m[0mid[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_id[0m[0m      = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.private[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "private" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1a"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.101.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = false
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-private-eu-west-1a"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.private[1][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "private" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1b"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.102.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = false
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-private-eu-west-1b"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.private[2][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "private" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1c"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.103.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = false
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-private-eu-west-1c"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.public[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1a"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.1.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = true
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-public-eu-west-1a"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.public[1][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1b"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.2.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = true
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-public-eu-west-1b"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_subnet.public[2][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_subnet" "public" {
+      [32m+[0m [0m[1m[0marn[0m[0m                             = (known after apply)
+      [32m+[0m [0m[1m[0massign_ipv6_address_on_creation[0m[0m = false
+      [32m+[0m [0m[1m[0mavailability_zone[0m[0m               = "eu-west-1c"
+      [32m+[0m [0m[1m[0mavailability_zone_id[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                      = "10.0.3.0/24"
+      [32m+[0m [0m[1m[0mid[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block_association_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mmap_public_ip_on_launch[0m[0m         = true
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                        = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                            = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc-public-eu-west-1c"
+        }
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                          = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_vpc.this[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_vpc" "this" {
+      [32m+[0m [0m[1m[0marn[0m[0m                              = (known after apply)
+      [32m+[0m [0m[1m[0massign_generated_ipv6_cidr_block[0m[0m = false
+      [32m+[0m [0m[1m[0mcidr_block[0m[0m                       = "10.0.0.0/16"
+      [32m+[0m [0m[1m[0mdefault_network_acl_id[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mdefault_route_table_id[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mdefault_security_group_id[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mdhcp_options_id[0m[0m                  = (known after apply)
+      [32m+[0m [0m[1m[0menable_classiclink[0m[0m               = (known after apply)
+      [32m+[0m [0m[1m[0menable_classiclink_dns_support[0m[0m   = (known after apply)
+      [32m+[0m [0m[1m[0menable_dns_hostnames[0m[0m             = true
+      [32m+[0m [0m[1m[0menable_dns_support[0m[0m               = true
+      [32m+[0m [0m[1m[0mid[0m[0m                               = (known after apply)
+      [32m+[0m [0m[1m[0minstance_tenancy[0m[0m                 = "default"
+      [32m+[0m [0m[1m[0mipv6_association_id[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mipv6_cidr_block[0m[0m                  = (known after apply)
+      [32m+[0m [0m[1m[0mmain_route_table_id[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mowner_id[0m[0m                         = (known after apply)
+      [32m+[0m [0m[1m[0mtags[0m[0m                             = {
+          [32m+[0m [0m"Name" = "basic-example-default-vpc"
+        }
+    }
+
+[1m  # module.fargate.module.vpc.aws_vpc_endpoint.s3[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_vpc_endpoint" "s3" {
+      [32m+[0m [0m[1m[0marn[0m[0m                   = (known after apply)
+      [32m+[0m [0m[1m[0mcidr_blocks[0m[0m           = (known after apply)
+      [32m+[0m [0m[1m[0mdns_entry[0m[0m             = (known after apply)
+      [32m+[0m [0m[1m[0mid[0m[0m                    = (known after apply)
+      [32m+[0m [0m[1m[0mnetwork_interface_ids[0m[0m = (known after apply)
+      [32m+[0m [0m[1m[0mowner_id[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mpolicy[0m[0m                = (known after apply)
+      [32m+[0m [0m[1m[0mprefix_list_id[0m[0m        = (known after apply)
+      [32m+[0m [0m[1m[0mprivate_dns_enabled[0m[0m   = false
+      [32m+[0m [0m[1m[0mrequester_managed[0m[0m     = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_ids[0m[0m       = (known after apply)
+      [32m+[0m [0m[1m[0msecurity_group_ids[0m[0m    = (known after apply)
+      [32m+[0m [0m[1m[0mservice_name[0m[0m          = "com.amazonaws.eu-west-1.s3"
+      [32m+[0m [0m[1m[0mstate[0m[0m                 = (known after apply)
+      [32m+[0m [0m[1m[0msubnet_ids[0m[0m            = (known after apply)
+      [32m+[0m [0m[1m[0mvpc_endpoint_type[0m[0m     = "Gateway"
+      [32m+[0m [0m[1m[0mvpc_id[0m[0m                = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_vpc_endpoint_route_table_association.private_s3[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_vpc_endpoint_route_table_association" "private_s3" {
+      [32m+[0m [0m[1m[0mid[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mvpc_endpoint_id[0m[0m = (known after apply)
+    }
+
+[1m  # module.fargate.module.vpc.aws_vpc_endpoint_route_table_association.public_s3[0][0m will be created[0m[0m
+[0m  [32m+[0m[0m resource "aws_vpc_endpoint_route_table_association" "public_s3" {
+      [32m+[0m [0m[1m[0mid[0m[0m              = (known after apply)
+      [32m+[0m [0m[1m[0mroute_table_id[0m[0m  = (known after apply)
+      [32m+[0m [0m[1m[0mvpc_endpoint_id[0m[0m = (known after apply)
+    }
+
+[0m[1mPlan:[0m 56 to add, 0 to change, 0 to destroy.[0m
+[33m
+[1m[33mWarning: [0m[0m[1mInterpolation-only expressions are deprecated[0m
+
+[0m  on .terraform/modules/fargate.vpc/outputs.tf line 353, in output "vpc_endpoint_sqs_id":
+ 353:   value       = [4m"${element(concat(aws_vpc_endpoint.sqs.*.id, list("")), 0)}"[0m
+[0m
+Terraform 0.11 and earlier required all non-constant expressions to be
+provided via interpolation syntax, but this pattern is now deprecated. To
+silence this warning, remove the "${ sequence from the start and the }"
+sequence from the end of this expression, leaving just the inner expression.
+
+Template interpolation syntax is still used to construct strings from
+expressions when the template includes multiple interpolation sequences or a
+mixture of literal strings and interpolations. This deprecation applies only
+to templates that consist entirely of a single interpolation sequence.
+
+(and 11 more similar warnings elsewhere)
+[0m[0m
+
+------------------------------------------------------------------------
+
+Note: You didn't specify an "-out" parameter to save this plan, so Terraform
+can't guarantee that exactly these actions will be performed if
+"terraform apply" is subsequently run.
+

@@ -72,6 +72,7 @@ module "fargate" {
       registry_retention_count = 15 # Number, Optional: sets how many images does the ecr registry will retain before recycling old ones. default = 20
       logs_retention_days      = 14 # Number, Optional: sets how many days does the cloud watch log group will retain logs entries before deleting old ones. default = 30
 
+      alb_create            = true #  Boolean, Optional: enables application load balancer. default = true
       health_check_interval = 100 # Number, Optional: sets the interval in seconds for the health check operation. default = 30
       health_check_path     = "/healthz" # String, Optional: sets the path that the tasks are exposing to perform health checks. default = "/"
 
@@ -85,7 +86,8 @@ module "fargate" {
       allow_connections_from = ["api2"] # List[String], Optional: By default all services can only accept connections from their ALB. To explicitly allow connections from one service to another, use this label. This means that THIS service can be reached by service `api2`
 
       service_discovery_enabled = true # Boolean, Optional: enables service discovery by creating a private Route53 zone. <service_name>.<cluster_name>.<terraform_workspace>.local
-    }
+
+  }
 
     another_service = {
       ...
@@ -147,7 +149,7 @@ Here are the examples for different use cases 😊
 - [x] Basic health information in CloudWatch Logs/Metrics
 - [x] Optional NAT Gateway
 - [x] App Auto Scaling
-- [ ] Optional Application Load Balancer
+- [x] Optional Application Load Balancer
 - [ ] External Docker image deployment - No ECR registry for that service
 - [ ] Predefined alarms about container status
 - [ ] Predefined Docker images to simplify some aspects of deployment/runtime (ie. the image will be able to collect Node.js runtime metrics etc.)

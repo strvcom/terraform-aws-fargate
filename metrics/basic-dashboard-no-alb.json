@@ -1,0 +1,36 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 0,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          [ "AWS/ECS", "CPUUtilization", "ServiceName", "${service_name}", "ClusterName", "${cluster_name}" ]
+        ],
+        "region": "${region}",
+        "title": "CPU Utilization"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0,
+      "y": 6,
+      "width": 24,
+      "height": 6,
+      "properties": {
+        "view": "timeSeries",
+        "stacked": false,
+        "metrics": [
+          [ "AWS/ECS", "MemoryUtilization", "ServiceName", "${service_name}", "ClusterName", "${cluster_name}" ]
+        ],
+        "region": "${region}",
+        "title": "Memory Utilization"
+      }
+    }
+  ]
+}

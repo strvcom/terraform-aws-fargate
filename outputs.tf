@@ -55,17 +55,17 @@ output "ecs_cluster_arn" {
 
 output "application_load_balancers_arns" {
   description = "List of ARNs of Application Load Balancers"
-  value       = aws_lb.this.*.arn
+  value       = values(aws_lb.this).*.arn
 }
 
 output "application_load_balancers_zone_ids" {
   description = "List of Zone IDs of Application Load Balancers"
-  value       = aws_lb.this.*.zone_id
+  value       = values(aws_lb.this).*.zone_id
 }
 
 output "application_load_balancers_dns_names" {
   description = "List of DNS Names of Application Load Balancers"
-  value       = aws_lb.this.*.dns_name
+  value       = values(aws_lb.this).*.dns_name
 }
 
 # SECURITY GROUPS
