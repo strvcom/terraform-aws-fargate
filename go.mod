@@ -10,6 +10,6 @@ require (
 	github.com/gruntwork-io/terratest v0.16.0
 	github.com/pquerna/otp v1.1.0 // indirect
 	github.com/stretchr/testify v1.3.0 // indirect
-	golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2 // indirect
-	golang.org/x/net v0.0.0-20190311031020-56fb01167e7d // indirect
+	golang.org/x/crypto v0.1.0 // indirect
+	google.golang.org/appengine v1.6.7 // indirect
 )
